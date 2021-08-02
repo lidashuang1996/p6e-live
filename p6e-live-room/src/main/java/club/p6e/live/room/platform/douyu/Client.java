@@ -16,11 +16,20 @@ public class Client {
     /** WebSocket 客户端对象 */
     private final club.p6e.websocket.client.Client client;
 
+    /**
+     * 构造方法初始化
+     * @param client 客户端对象
+     * @param encoder 编码器对象
+     */
     public Client(club.p6e.websocket.client.Client client, Encoder encoder) {
         this.client = client;
         this.encoder = encoder;
     }
 
+    /**
+     * 发送登录的消息
+     * @param rid 房间的编号
+     */
     public void sendLoginMessage(String rid) {
         final Map<String, String> loginMessage = new HashMap<>(2);
         loginMessage.put("roomid", rid);
@@ -28,6 +37,10 @@ public class Client {
         client.sendMessageBinary(encoder.encode(Message.create(loginMessage)));
     }
 
+    /**
+     * 发送加入组的消息
+     * @param rid 房间的编号
+     */
     public void sendGroupMessage(String rid) {
         final Map<String, String> groupMessage = new HashMap<>(2);
         groupMessage.put("rid", rid);
@@ -36,7 +49,9 @@ public class Client {
         client.sendMessageBinary(encoder.encode(Message.create(groupMessage)));
     }
 
-
+    /**
+     * 发送接收全部礼物消息
+     */
     public void sendAllGiftMessage() {
         final Map<String, Object> allGiftMessage = new HashMap<>(2);
         allGiftMessage.put("type", "dmfbdreq");
@@ -65,6 +80,9 @@ public class Client {
         client.sendMessageBinary(encoder.encode(Message.create(allGiftMessage)));
     }
 
+    /**
+     * 发送心跳消息
+     */
     public void sendPantMessage() {
         final Map<String, String> pantMessage = new HashMap<>(1);
         pantMessage.put("type", "mrkl");
