@@ -19,7 +19,7 @@ public class TestLiveRoomDouYu {
         P6eLiveRoomApplication.init();
         // 斗鱼房间消息监听
         P6eLiveRoomApplication.createDouYuLiveRoomApplication(
-                new Application("182102", new LiveRoomCallback.DouYu() {
+                new Application("288016", new LiveRoomCallback.DouYu() {
 
             @Override
             public void onOpen(Client client) {
@@ -38,7 +38,9 @@ public class TestLiveRoomDouYu {
 
             @Override
             public void onMessage(Client client, List<Message> messages) {
-
+                for (Message message : messages) {
+                    System.out.println("收到的消息 --> " + message.getData());
+                }
             }
 
         }));

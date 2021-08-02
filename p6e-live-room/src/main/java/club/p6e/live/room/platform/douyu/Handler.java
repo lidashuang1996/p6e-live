@@ -111,18 +111,18 @@ public class Handler implements Callback {
         // 发送登录的信息
         this.client.sendLoginMessage(this.rid);
         // 发送加入的组的信息
-        // this.client.sendGroupMessage(this.rid);
+        this.client.sendGroupMessage(this.rid);
         // 发送接收全部礼物的信息
-        // this.client.sendAllGiftMessage();
+        this.client.sendAllGiftMessage();
 
         // 心跳任务创建
-//        new LiveRoomApplication.Task(45, 45, true) {
-//            @Override
-//            public void execute() {
-//                // 心跳
-//                client.sendPantMessage();
-//            }
-//        };
+        new LiveRoomApplication.Task(45, 45, true) {
+            @Override
+            public void execute() {
+                // 心跳
+                client.sendPantMessage();
+            }
+        };
 
         // 触发回调函数
         this.callback.onOpen(this.client);

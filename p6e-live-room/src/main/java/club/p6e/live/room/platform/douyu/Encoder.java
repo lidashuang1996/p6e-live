@@ -32,6 +32,8 @@ public class Encoder {
     private static final int ENDING_MARK_LENGTH = 1;
     /** 房间发送给斗鱼消息的类型 */
     private static final int ROOM_SEND_MESSAGE_TYPE = 689;
+    /** 斗鱼类型的长度在头部所占字节码长度 */
+    private static final int TYPE_LENGTH_HEADER_BYTE_LENGTH = 4;
     /** 斗鱼内容的长度在头部所占字节码长度 */
     private static final int CONTENT_LENGTH_HEADER_BYTE_LENGTH = 4;
 
@@ -56,15 +58,14 @@ public class Encoder {
     public ByteBuf encode(Message message) {
         LOGGER.debug("[ " + PLATFORM + " ] encode message ==> " + message);
         try {
-            final int length = message.getLength();
-            final String content = message.getSource();
+            final byte[] contents = message.getSource().getBytes(StandardCharsets.UTF_8);
             final int type = message.getType() == null ? ROOM_SEND_MESSAGE_TYPE : message.getType();
-            final ByteBuf byteBuf = Unpooled.buffer(
-                    length + ENDING_MARK_LENGTH + CONTENT_LENGTH_HEADER_BYTE_LENGTH);
+            final int length = message.getLength() + TYPE_LENGTH_HEADER_BYTE_LENGTH + CONTENT_LENGTH_HEADER_BYTE_LENGTH + ENDING_MARK_LENGTH;
+            final ByteBuf byteBuf = Unpooled.buffer(length + CONTENT_LENGTH_HEADER_BYTE_LENGTH);
             byteBuf.writeIntLE(length);
             byteBuf.writeIntLE(length);
             byteBuf.writeIntLE(type);
-            byteBuf.writeBytes(content.getBytes(StandardCharsets.UTF_8));
+            byteBuf.writeBytes(contents);
             byteBuf.writeByte(ENDING_MARK);
             return byteBuf;
         } catch (Exception e) {
