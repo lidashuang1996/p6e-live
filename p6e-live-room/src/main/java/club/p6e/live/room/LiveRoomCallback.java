@@ -31,16 +31,19 @@ public interface LiveRoomCallback {
 
 
 
-//    /**
-//     * BliBli直播的消息回调
-//     */
-//    public interface BliBli {
-//        /**
-//         * 回调的执行方法
-//         * @param messages 消息对象
-//         */
-//        public void execute(List<P6eBliBliChannelMessage> messages);
-//    }
+    /**
+     * BliBli直播的消息回调
+     */
+    public interface BliBli {
+        /**
+         * 回调的执行方法
+         * @param messages 消息对象
+         */
+        public void onOpen(club.p6e.live.room.platform.bilibili.Client client );
+        public void onClose(club.p6e.live.room.platform.bilibili.Client client );
+        public void onError(club.p6e.live.room.platform.bilibili.Client client ,Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.bilibili.Client client, List<club.p6e.live.room.platform.bilibili.Message> messages);
+    }
 //
 //    /**
 //     * 火猫直播的消息回调

@@ -1,4 +1,4 @@
-package club.p6e.live.room.platform.douyu;
+package club.p6e.live.room.platform.bilibili;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -58,14 +58,7 @@ public class Encoder {
     public ByteBuf encode(Message message) {
         LOGGER.debug("[ " + PLATFORM + " ] encode message ==> " + message);
         try {
-            final byte[] contents = message.source().getBytes(StandardCharsets.UTF_8);
-            final int type = message.type() == null ? ROOM_SEND_MESSAGE_TYPE : message.type();
-            final int length = message.length() + TYPE_LENGTH_HEADER_BYTE_LENGTH + CONTENT_LENGTH_HEADER_BYTE_LENGTH + ENDING_MARK_LENGTH;
-            final ByteBuf byteBuf = Unpooled.buffer(length + CONTENT_LENGTH_HEADER_BYTE_LENGTH);
-            byteBuf.writeIntLE(length);
-            byteBuf.writeIntLE(length);
-            byteBuf.writeIntLE(type);
-            byteBuf.writeBytes(contents);
+            final ByteBuf byteBuf = Unpooled.buffer(CONTENT_LENGTH_HEADER_BYTE_LENGTH);
             byteBuf.writeByte(ENDING_MARK);
             return byteBuf;
         } catch (Exception e) {

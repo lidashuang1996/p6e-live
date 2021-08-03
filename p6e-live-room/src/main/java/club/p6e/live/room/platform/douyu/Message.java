@@ -238,18 +238,16 @@ public class Message extends HashMap<String, Object> {
 
     /**
      * 读取消息的主体内容数据
-     * @return 主体内容
      */
-    public Message setSource(String source) {
+    private void setSource(String source) {
         this.put(SOURCE, source);
-        return this;
     }
 
     /**
      * 读取消息的主体内容数据
      * @return 主体内容
      */
-    public String getSource() {
+    public String source() {
         final Object o = this.get(SOURCE);
         return o == null ? null : String.valueOf(o);
     }
@@ -278,7 +276,7 @@ public class Message extends HashMap<String, Object> {
      * 读取消息的类型数据
      * @return 类型
      */
-    public Integer getType() {
+    public Integer type() {
         final Object o = this.get(TYPE);
         return o == null ? null : Double.valueOf(String.valueOf(o)).intValue();
     }
@@ -287,7 +285,7 @@ public class Message extends HashMap<String, Object> {
      * 读取消息的长度数据
      * @return 长度
      */
-    public Integer getLength() {
+    public Integer length() {
         final Object o = this.get(LENGTH);
         return o == null ? null : Double.valueOf(String.valueOf(o)).intValue();
     }

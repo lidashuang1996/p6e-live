@@ -1,9 +1,22 @@
 package club.p6e.live.room.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -229,21 +242,6 @@ public final class Utils {
         return byteArrayOutputStream.toByteArray();
     }
 
-    /**
-     * 消息解析
-     */
-    public static String translate(String content, String... contents) {
-        if (contents == null || contents.length == 0 || contents.length % 2 != 0) return content;
-        else {
-            for (int i = 0; i < contents.length; i++) {
-                if (i % 2 == 0) {
-                    content = content.replaceAll("\\$\\{" + contents[i] + "}", contents[i + 1]);
-                }
-            }
-            return content;
-        }
-    }
-
 
     public static byte[] byteListToByteArray(List<Byte> list) {
         final byte[] result = new byte[list.size()];
@@ -267,4 +265,92 @@ public final class Utils {
                 className.equals(String.class);
     }
 
+    private static final Pattern TRANSLATE_PATTERN = Pattern.compile("(\\$\\{)([\\w]+)(})");
+
+    /**
+     * 消息解析
+     */
+    public static String translate(String content, String... contents) {
+        final int ratio = 2;
+        if (contents == null || contents.length == 0 || contents.length % ratio != 0) {
+            return content;
+        } else {
+            final Map<String, String> params = new HashMap<>(contents.length / ratio);
+            for (int i = 0; i < contents.length; i = i + ratio) {
+                params.put(contents[i], contents[i + 1]);
+            }
+            final StringBuffer sb = new StringBuffer();
+            final Matcher matcher = TRANSLATE_PATTERN.matcher(content);
+            while (matcher.find()) {
+                final String param = matcher.group();
+                final String value = params.get(param.substring(2, param.length() - 1));
+                matcher.appendReplacement(sb, value == null ? "" : value);
+            }
+            matcher.appendTail(sb);
+            return sb.toString();
+        }
+    }
+
+    public static String doGet(String url) {
+        BufferedReader in = null;
+        final StringBuilder result = new StringBuilder();
+        try {
+            final URL realUrl = new URL(url);
+            // 打开和URL之间的连接
+            final URLConnection connection = realUrl.openConnection();
+            connection.setRequestProperty("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36");
+            // 建立实际的连接
+            connection.connect();
+            String line;
+            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            while ((line = in.readLine()) != null) {
+                result.append(line);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return result.toString();
+    }
+
+    public static void  json() {
+
+
+
+    }
+
+    private static final Gson GSON = (new GsonBuilder()).disableHtmlEscaping().create();
+
+
+    public static String toJson(Object o) {
+        return o == null ? null : GSON.toJson(o);
+    }
+
+    public static <T> T fromJson(String json, Class<T> tClass) {
+        return GSON.fromJson(json, tClass);
+    }
+
+    public static <T> T fromJson(String json, Type typeOfT) {
+        return GSON.fromJson(json, typeOfT);
+    }
+
+    @SuppressWarnings("all")
+    public static <T, W> Map<T, W> fromJsonToMap(String json, Class<T> keyClass, Class<W> valueClass) {
+        return (Map)GSON.fromJson(json, (new TypeToken<Map<T, W>>() {
+        }).getType());
+    }
+
+
+    public static byte[] bytesIntercept(byte[] bytes, int start, int len) {
+        final byte[] result = new byte[len];
+        System.arraycopy(bytes, start, result, 0, len);
+        return result;
+    }
 }
