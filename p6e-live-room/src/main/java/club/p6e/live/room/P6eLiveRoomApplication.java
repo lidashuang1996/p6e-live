@@ -1,7 +1,5 @@
 package club.p6e.live.room;
 
-import club.p6e.live.room.platform.douyu.Application;
-
 /**
  * @author lidashuang
  * @version 1.0
@@ -13,7 +11,11 @@ public class P6eLiveRoomApplication {
         LiveRoomApplication.init();
     }
 
-    public static void createDouYuLiveRoomApplication(Application application) {
+    public static void createDouYuLiveRoomApplication(club.p6e.live.room.platform.douyu.Application application) {
+        application.connect();
+    }
+
+    public static void createBiLiBiLiLiveRoomApplication(club.p6e.live.room.platform.bilibili.Application application) {
         application.connect();
     }
 

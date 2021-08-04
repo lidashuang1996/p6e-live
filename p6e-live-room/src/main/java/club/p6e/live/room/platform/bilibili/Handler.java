@@ -1,5 +1,6 @@
 package club.p6e.live.room.platform.bilibili;
 
+import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
 import club.p6e.websocket.client.Callback;
 import io.netty.buffer.ByteBuf;
@@ -30,7 +31,7 @@ public class Handler implements Callback {
     /** 是否异步 */
     private final boolean isAsync;
     /** 回调执行函数 */
-    private final LiveRoomCallback.BliBli callback;
+    private final LiveRoomCallback.BiLiBiLi callback;
 
     /**
      * 斗鱼客户端
@@ -43,7 +44,7 @@ public class Handler implements Callback {
      * @param token 认证的令牌
      * @param callback 回调函数
      */
-    public Handler(String rid, String token, LiveRoomCallback.BliBli callback) {
+    public Handler(String rid, String token, LiveRoomCallback.BiLiBiLi callback) {
         this(rid, token, new Decoder(), new Encoder(), callback, true);
     }
 
@@ -54,7 +55,7 @@ public class Handler implements Callback {
      * @param callback 回调函数
      * @param isAsync 是否异步执行
      */
-    public Handler(String rid, String token, LiveRoomCallback.BliBli callback, boolean isAsync) {
+    public Handler(String rid, String token, LiveRoomCallback.BiLiBiLi callback, boolean isAsync) {
         this(rid, token, new Decoder(), new Encoder(), callback, isAsync);
     }
 
@@ -65,7 +66,7 @@ public class Handler implements Callback {
      * @param decoder 解码器
      * @param callback 回调函数
      */
-    public Handler(String rid, String token, Decoder decoder, LiveRoomCallback.BliBli callback) {
+    public Handler(String rid, String token, Decoder decoder, LiveRoomCallback.BiLiBiLi callback) {
         this(rid, token, decoder, new Encoder(), callback, true);
     }
 
@@ -75,7 +76,7 @@ public class Handler implements Callback {
      * @param token 认证的令牌
      * @param encoder 编码器
      */
-    public Handler(String rid, String token, Encoder encoder, LiveRoomCallback.BliBli callback) {
+    public Handler(String rid, String token, Encoder encoder, LiveRoomCallback.BiLiBiLi callback) {
         this(rid, token, new Decoder(), encoder, callback, true);
     }
 
@@ -87,7 +88,7 @@ public class Handler implements Callback {
      * @param encoder 编码器
      * @param callback 回调函数
      */
-    public Handler(String rid, String token, Decoder decoder, Encoder encoder, LiveRoomCallback.BliBli callback) {
+    public Handler(String rid, String token, Decoder decoder, Encoder encoder, LiveRoomCallback.BiLiBiLi callback) {
         this(rid, token, decoder, encoder, callback, true);
     }
 
@@ -99,7 +100,7 @@ public class Handler implements Callback {
      * @param encoder 编码器
      * @param isAsync 是否异步执行
      */
-    public Handler(String rid, String token, Decoder decoder, Encoder encoder, LiveRoomCallback.BliBli callback, boolean isAsync) {
+    public Handler(String rid, String token, Decoder decoder, Encoder encoder, LiveRoomCallback.BiLiBiLi callback, boolean isAsync) {
         this.rid = rid;
         this.token = token;
         this.decoder = decoder;
@@ -122,6 +123,16 @@ public class Handler implements Callback {
         this.client = new Client(wc, this.encoder);
         // 发送登录消息
         this.client.sendLoginMessage(this.rid, this.token);
+
+        // 心跳任务创建
+        new LiveRoomApplication.Task(30, 30, true) {
+            @Override
+            public void execute() {
+                // 心跳
+                client.sendPantMessage();
+            }
+        };
+
         // 触发回调函数
         this.callback.onOpen(this.client);
     }

@@ -46,15 +46,27 @@ public class Decoder {
      * 解码操作
      * 解码操作将 ByteBuf 转换为消息对象
      *
-     * 斗鱼接收消息
-     * 消息类型 690 斗鱼服务器推送给客户端的类型
-     *
-     * 斗鱼消息 = 消息头部
-     *          (
-     *              消息总长度 [ 小端模式转换 （4字节） ( 这个不算总长度中 )]
-     *              消息总长度 [ 小端模式转换 （4字节） ]
-     *              消息类型 [ 小端模式转换 （4字节）]
-     *          )
+     * BliBli 接收消息
+     * BliBli 消息 = 消息头部
+     *              (
+     *                  消息总长度 [ 大端模式转换 (4) ]
+     *                  消息头部总长度 [ 数据包头部长度，固定为 16 (2) ]
+     *                  数据包协议版本 [
+     *                      0	数据包有效负载为未压缩的JSON格式数据
+     *                      1	客户端心跳包，或服务器心跳回应（带有人气值）
+     *                      2	数据包有效负载为通过zlib压缩后的JSON格式数据
+     *                      (2)
+     *                  ]
+     *                  数据包类型 [
+     *                      2	客户端	心跳	不发送心跳包，50-60秒后服务器会强制断开连接
+     *                      3	服务器	心跳回应	有效负载为直播间人气值
+     *                      5	服务器	通知	有效负载为礼物、弹幕、公告等
+     *                      7	客户端	认证（加入房间）	客户端成功建立连接后发送的第一个数据包
+     *                      8	服务器	认证成功回应	服务器接受认证包后回应的第一个数据包
+     *                      (4)
+     *                  ]
+     *                  备用字段 [ 固定为 0 (4) ]
+     *              )
      *         + 消息内容
      *
      * @param buf ByteBuf 对象
@@ -67,21 +79,28 @@ public class Decoder {
         while (buf.isReadable()) {
             if (buf.readableBytes() >= HEADER_LENGTH) {
                 // 内容1 部分
-                final int len1 = buf.readIntLE();
+                final int len1 = buf.readInt();
                 // 内容2 部分
                 final int len2 = (buf.readByte() & 0xFF << 8) | (buf.readByte() & 0xFF);
                 // 内容3 部分
                 final int agreement = (buf.readByte() & 0xFF << 8) | (buf.readByte() & 0xFF);
                 // 内容4 部分
-                final int type = buf.readIntLE();
+                final int type = buf.readInt();
                 // 内容5 部分
-                final int spare = buf.readIntLE();
+                final int spare = buf.readInt();
 
                 // 验证是否符合接收消息的格式
                 if (len1 > HEADER_LENGTH && len2 == HEADER_LENGTH) {
                     final byte[] bytes =  new byte[len1 - HEADER_LENGTH];
                     buf.readBytes(bytes);
-                    if (agreement == 2) {
+                    if (agreement == 1) {
+                        if (bytes.length == 4) {
+                            result.add(Message.deserializationObjectToMessage(
+                                    type, agreement, len1, spare, Utils.bytesToIntBig(bytes), false));
+                        } else {
+                            result.add(Message.deserializationBytesToMessage(type, agreement, len1, spare, bytes));
+                        }
+                    } else if (agreement == 2) {
                         // 发送协议为 2 的类型的数据的时候，可能是多条和并推送过来的
                         // 需要拆开为一条条的数据
                         int zIndex = 0;
@@ -101,11 +120,18 @@ public class Decoder {
                             final int mType = Utils.bytesToIntBig(Utils.bytesIntercept(mBytes, 8, 4));
                             // 内容5 部分
                             final int mSpare = Utils.bytesToIntBig(Utils.bytesIntercept(mBytes, 12, 4));
-                            // result.add(new Source(itemBytes, type, spare, new String(itemBytes, StandardCharsets.UTF_8).substring(16)));
-                            System.out.println("aaaaa --> " + new String(mBytes));
+                            if (mLen1 > HEADER_LENGTH && mLen2 == HEADER_LENGTH) {
+                                result.add(Message.deserializationObjectToMessage(
+                                        mType, mAgreement, mLen1, mSpare, new String(mBytes).substring(HEADER_LENGTH), true));
+                            } else {
+                                LOGGER.error("[ " + PLATFORM + " ] " +
+                                        "unread length is less than content length, entire message is discarded !!");
+                                throw new IOException("[ " + PLATFORM + " ] " +
+                                        "unread length is less than content length, entire message is discarded !!");
+                            }
                         }
                     } else {
-                        System.out.println("bbbb --> " + new String(bytes));
+                        result.add(Message.deserializationObjectToMessage(type, agreement, len1, spare, bytes, false));
                     }
                 } else {
                     LOGGER.error("[ " + PLATFORM + " ] " +

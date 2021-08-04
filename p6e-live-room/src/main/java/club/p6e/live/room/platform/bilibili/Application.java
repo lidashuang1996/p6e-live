@@ -5,9 +5,8 @@ import club.p6e.live.room.LiveRoomCallback;
 import club.p6e.live.room.utils.Utils;
 import club.p6e.websocket.client.Config;
 import io.netty.channel.Channel;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +16,10 @@ import java.util.Map;
  */
 public class Application extends LiveRoomApplication {
 
-    /** 官网的 URL 地址（HTTP） */
-    private static final String HTTP_URL = "http://live.bilibili.com/";
-    /** 官网的 URL 地址（HTTPS） */
-    private static final String HTTPS_URL = "https://live.bilibili.com/";
     /** 获取房间 WebSocket 连接地址的 URL */
     private static final String WEB_SOCKET_URL = "https://api.live.bilibili.com/room/v1/Danmu/getConf?room_id=${room}&platform=pc&player=web";
+    /** 注入日志对象 */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
     /** URL */
     private final String url;
@@ -41,7 +38,9 @@ public class Application extends LiveRoomApplication {
     private static String[] getUrlAndToken(String rid) {
         try {
             final String httpUrl = Utils.translate(WEB_SOCKET_URL, "room", rid);
+            LOGGER.debug("get url and token address ==> " + httpUrl);
             final String httpResult = Utils.doGet(httpUrl);
+            LOGGER.debug("get url and token result ==> " + httpResult);
             final String p1 = "data", p2 = "host_server_list", p3 = "host", p4 = "wss_port", p5 = "token";
             final Map<String, Object> map = Utils.fromJsonToMap(httpResult, String.class, Object.class);
             if (map != null && map.get(p1) != null) {
@@ -65,59 +64,19 @@ public class Application extends LiveRoomApplication {
     }
 
     /**
-     * 通过直播间的网站地址获取房间编号
-     * @return rid 房间编号
-     */
-    @SuppressWarnings("all")
-    public static String getRid(String url) {
-        if (url.startsWith(HTTP_URL) || url.startsWith(HTTPS_URL)) {
-            try {
-                final String script = "script";
-                final String mark = "window.__NEPTUNE_IS_MY_WAIFU__=";
-                final Document document = Jsoup.connect(url).get();
-                for (final Element element : document.body().getElementsByTag(script)) {
-                    String content = element.data();
-                    if (content.startsWith(mark)) {
-                        content = content.substring(mark.length());
-                        final String p1 = "roomInfoRes", p2 = "data", p3 = "room_info", p4 = "room_id";
-                        final Map<String, Object> map = Utils.fromJsonToMap(content, String.class, Object.class);
-                        if (map != null && map.get(p1) != null) {
-                            final Map<String, Object> map1 = (Map<String, Object>) map.get(p1);
-                            if (map1.get(p2) != null) {
-                                final Map<String, Object> map2 = (Map<String, Object>) map1.get(p2);
-                                if (map2.get(p3) != null) {
-                                    final Map<String, Object> map3 = (Map<String, Object>) map2.get(p3);
-                                    if (map3.get(p4) != null) {
-                                        return String.valueOf(Double.valueOf(String.valueOf(map3.get(p4))).intValue());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                throw new RuntimeException("get rid data error");
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("get rid data error, " + e.getMessage());
-            }
-        } else {
-            throw new RuntimeException("URL address does not start with " + HTTP_URL + " or " + HTTPS_URL);
-        }
-    }
-
-    /**
      * 构造方法初始化
      * @param rid 房间的 ID
      * @param callback 回调的函数
      */
-    public Application(String rid, LiveRoomCallback.BliBli callback) {
+    public Application(String rid, LiveRoomCallback.BiLiBiLi callback) {
         final int len = 2;
         final String[] data = getUrlAndToken(rid);
         if (data != null && data.length >= len) {
             this.url = data[0];
             this.handler = new Handler(rid, data[1], new Decoder(), new Encoder(), callback, true);
+        } else {
+            throw new RuntimeException("create application error.");
         }
-        throw new RuntimeException("create application error.");
     }
 
     /**
@@ -126,14 +85,15 @@ public class Application extends LiveRoomApplication {
      * @param callback 回调的函数
      * @param isAsync 是否异步执行
      */
-    public Application(String rid, LiveRoomCallback.BliBli callback, boolean isAsync) {
+    public Application(String rid, LiveRoomCallback.BiLiBiLi callback, boolean isAsync) {
         final int len = 2;
         final String[] data = getUrlAndToken(rid);
         if (data != null && data.length >= len) {
             this.url = data[0];
             this.handler = new Handler(rid, data[1], new Decoder(), new Encoder(), callback, isAsync);
+        } else {
+            throw new RuntimeException("create application error.");
         }
-        throw new RuntimeException("create application error.");
     }
 
     /**

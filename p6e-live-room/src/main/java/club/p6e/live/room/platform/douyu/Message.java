@@ -232,7 +232,7 @@ public class Message extends HashMap<String, Object> {
      * 读取消息的主体内容数据
      * @return 主体内容
      */
-    public Object getData() {
+    public Object data() {
         return this.get(DATA);
     }
 

@@ -21,45 +21,56 @@ import java.nio.charset.StandardCharsets;
 public class Encoder {
 
     /** 平台名称 */
-    private static final String PLATFORM = "DOU_YU";
+    private static final String PLATFORM = "BILI_BILI";
     /** 注入日志对象 */
     private static final Logger LOGGER = LoggerFactory.getLogger(Decoder.class);
 
-
-    /** 结尾标记符 */
-    private static final int ENDING_MARK = 0;
-    /** 结尾标记符长度 */
-    private static final int ENDING_MARK_LENGTH = 1;
-    /** 房间发送给斗鱼消息的类型 */
-    private static final int ROOM_SEND_MESSAGE_TYPE = 689;
-    /** 斗鱼类型的长度在头部所占字节码长度 */
-    private static final int TYPE_LENGTH_HEADER_BYTE_LENGTH = 4;
-    /** 斗鱼内容的长度在头部所占字节码长度 */
-    private static final int CONTENT_LENGTH_HEADER_BYTE_LENGTH = 4;
+    /** 空的字节内容 */
+    private static final int EMPTY_BYTE = 0;
+    /** 头部内容长度 */
+    private static final int HEADER_CONTENT_LENGTH = 16;
 
     /**
      * 编码操作
      * 编码操作将消息对象转换为 ByteBuf 对象
      *
-     * 斗鱼发送消息
-     * 消息类型 689 客户端发送给斗鱼服务器
-     *
-     * 斗鱼消息 = 消息头部
-     *          (
-     *              消息总长度 [ 小端模式转换 4 ( 这个不算总长度中 )]
-     *              消息总长度 [ 小端模式转换 4 ]
-     *              消息类型 [ 小端模式转换 4 ]
-     *         )
+     * BliBli 发送消息
+     * BliBli 消息 = 消息头部
+     *              (
+     *                  消息总长度 [ 大端模式转换 (4) ]
+     *                  消息头部总长度 [ 数据包头部长度，固定为 16 (2) ]
+     *                  数据包协议版本 [
+     *                      0	数据包有效负载为未压缩的JSON格式数据
+     *                      1	客户端心跳包，或服务器心跳回应（带有人气值）
+     *                      2	数据包有效负载为通过zlib压缩后的JSON格式数据
+     *                      (2)
+     *                  ]
+     *                  数据包类型 [
+     *                      2	客户端	心跳	不发送心跳包，50-60秒后服务器会强制断开连接
+     *                      3	服务器	心跳回应	有效负载为直播间人气值
+     *                      5	服务器	通知	有效负载为礼物、弹幕、公告等
+     *                      7	客户端	认证（加入房间）	客户端成功建立连接后发送的第一个数据包
+     *                      8	服务器	认证成功回应	服务器接受认证包后回应的第一个数据包
+     *                      (4)
+     *                  ]
+     *                  备用字段 [ 固定为 1 (4) ]
+     *              )
      *         + 消息内容
-     *         + 结束符号 (0)
      * @param message 消息对象
      * @return ByteBuf 对象
      */
     public ByteBuf encode(Message message) {
         LOGGER.debug("[ " + PLATFORM + " ] encode message ==> " + message);
         try {
-            final ByteBuf byteBuf = Unpooled.buffer(CONTENT_LENGTH_HEADER_BYTE_LENGTH);
-            byteBuf.writeByte(ENDING_MARK);
+            final ByteBuf byteBuf = Unpooled.buffer(message.length());
+            byteBuf.writeInt(message.length());
+            byteBuf.writeByte(EMPTY_BYTE);
+            byteBuf.writeByte(HEADER_CONTENT_LENGTH);
+            byteBuf.writeByte(EMPTY_BYTE);
+            byteBuf.writeByte(message.agreement());
+            byteBuf.writeInt(message.type());
+            byteBuf.writeInt(message.spare());
+            byteBuf.writeBytes(message.source().getBytes(StandardCharsets.UTF_8));
             return byteBuf;
         } catch (Exception e) {
             e.printStackTrace();

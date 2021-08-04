@@ -9,11 +9,19 @@ import java.util.Map;
  */
 public class Client {
 
+    /** 房间心跳的消息内容 */
+    private static final String PANT_MESSAGE = "[object Object]";
+    /** 房间心跳的消息类型 */
+    private static final int PANT_TYPE_MESSAGE = 2;
+    /** 房间登录的消息类型 */
+    private static final int LOGIN_TYPE_MESSAGE = 7;
+    /** 房间登录成功返回的消息类型 */
+    private static final int LOGIN_RESULT_TYPE_MESSAGE = 8;
+
     /** 编码器 */
     private final Encoder encoder;
     /** 客户端 */
     private final club.p6e.websocket.client.Client client;
-
 
     /**
      * 构造器初始化
@@ -31,14 +39,19 @@ public class Client {
      * @param token 房间的令牌
      */
     public void sendLoginMessage(String rid, String token) {
-        final Map<String, Object> data = new HashMap<>();
+        final Map<String, Object> data = new HashMap<>(6);
         data.put("uid", 0);
         data.put("type", 2);
         data.put("key", token);
-        data.put("protover", 3);
+        // protover 采用是 2
+        // protover 最新的版本是 3
+        data.put("protover", 2);
         data.put("platform", "web");
         data.put("roomid", Integer.valueOf(rid));
-        this.client.sendMessageBinary(encoder.encode(Message.create(data)));
+        this.client.sendMessageBinary(encoder.encode(Message.create(data, LOGIN_TYPE_MESSAGE)));
     }
 
+    public void sendPantMessage() {
+        this.client.sendMessageBinary(encoder.encode(Message.create(PANT_MESSAGE, PANT_TYPE_MESSAGE)));
+    }
 }

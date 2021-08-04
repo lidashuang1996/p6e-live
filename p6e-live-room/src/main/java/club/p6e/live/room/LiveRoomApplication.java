@@ -12,6 +12,7 @@ import java.util.concurrent.*;
  */
 public abstract class LiveRoomApplication {
 
+    private static boolean IS_INIT = false;
     /**
      * 连接器对象
      */
@@ -71,13 +72,17 @@ public abstract class LiveRoomApplication {
     /**
      * 初始化操作
      */
-    public static void init() {
-        // 初始化线程池
-        P6eWebSocketClientApplication.initThreadPool();
-        // 创建连接器
-        CONNECTOR = P6eWebSocketClientApplication.connector();
-        // 初始化任务线程
-        initScheduledExecutorService();
+    public synchronized static void init() {
+        if (!IS_INIT) {
+            // 初始化线程池
+            P6eWebSocketClientApplication.initThreadPool();
+            // 创建连接器
+            CONNECTOR = P6eWebSocketClientApplication.connector();
+            // 初始化任务线程
+            initScheduledExecutorService();
+            // 初始化完成
+            IS_INIT = true;
+        }
     }
 
     /**

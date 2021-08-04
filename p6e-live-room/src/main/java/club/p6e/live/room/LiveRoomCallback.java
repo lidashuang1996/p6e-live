@@ -34,7 +34,7 @@ public interface LiveRoomCallback {
     /**
      * BliBli直播的消息回调
      */
-    public interface BliBli {
+    public interface BiLiBiLi {
         /**
          * 回调的执行方法
          * @param messages 消息对象
