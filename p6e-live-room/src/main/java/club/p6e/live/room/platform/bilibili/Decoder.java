@@ -32,14 +32,14 @@ public class Decoder {
     /**
      * 解码操作
      * @param in 输入的对象
-     * @param out 输出的对象
+     * @return 输出的对象
      * @throws Exception 解码过程出现的异常
      */
-    public void decode(ByteBuf in, List<Message> out) throws Exception {
+    public List<Message> decode(ByteBuf in) throws Exception {
         // 解码的内容长度
         LOGGER.debug("[ " + PLATFORM + " ] decode content length ==> " + in.readableBytes());
         // 解码且将返回的对象添加到管道中
-        out.addAll(decodeByteBufToMessages(in));
+        return new ArrayList<>(decodeByteBufToMessages(in));
     }
 
     /**

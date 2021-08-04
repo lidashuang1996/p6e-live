@@ -146,40 +146,52 @@ public class Handler implements Callback {
 
     @Override
     public void onMessageBinary(club.p6e.websocket.client.Client client, ByteBuf byteBuf) {
-        final List<Message> messages = new ArrayList<>();
         try {
             // 解码得到消息对象
-            decoder.decode(byteBuf, messages);
+            // 回调收到消息方法
+            this.callback.onMessage(this.client, decoder.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            byteBuf.release();
         }
-        // 回调收到消息方法
-        this.callback.onMessage(this.client, messages);
     }
 
     @Override
     public void onMessagePong(club.p6e.websocket.client.Client client, ByteBuf byteBuf) {
-        client.sendMessagePing();
-        final byte[] bytes = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(bytes);
-        LOGGER.error("[ DY: " + rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
-                + ", message format is incorrect and will be discarded.");
+        try {
+            client.sendMessagePing();
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.error("[ DY: " + rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
+                    + ", message format is incorrect and will be discarded.");
+        } finally {
+            byteBuf.release();
+        }
     }
 
     @Override
     public void onMessagePing(club.p6e.websocket.client.Client client, ByteBuf byteBuf) {
-        client.sendMessagePong();
-        final byte[] bytes = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(bytes);
-        LOGGER.error("[ DY: " + rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
-                + ", message format is incorrect and will be discarded.");
+        try {
+            client.sendMessagePong();
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.error("[ DY: " + rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
+                    + ", message format is incorrect and will be discarded.");
+        } finally {
+            byteBuf.release();
+        }
     }
 
     @Override
     public void onMessageContinuation(club.p6e.websocket.client.Client client, ByteBuf byteBuf) {
-        final byte[] bytes = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(bytes);
-        LOGGER.error("[ DY: " + rid + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
-                + ", message format is incorrect and will be discarded.");
+        try {
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.error("[ DY: " + rid + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
+                    + ", message format is incorrect and will be discarded.");
+        } finally {
+            byteBuf.release();
+        }
     }
 }

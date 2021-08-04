@@ -35,11 +35,11 @@ public class Decoder {
     /** 斗鱼内容的长度在头部所占字节码长度 */
     private static final int CONTENT_LENGTH_HEADER_BYTE_LENGTH = 4;
 
-    public void decode(ByteBuf in, List<Message> out) throws Exception {
+    public List<Message> decode(ByteBuf in) throws Exception {
         // 解码的内容长度
         LOGGER.debug("[ " + PLATFORM + " ] decode content length ==> " + in.readableBytes());
         // 解码且将返回的对象添加到管道中
-        out.addAll(decodeByteBufToMessages(in));
+        return new ArrayList<>(decodeByteBufToMessages(in));
     }
 
     /**
