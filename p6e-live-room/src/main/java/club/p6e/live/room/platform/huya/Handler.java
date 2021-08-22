@@ -1,4 +1,4 @@
-package club.p6e.live.room.platform.douyu;
+package club.p6e.live.room.platform.huya;
 
 import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
@@ -6,6 +6,7 @@ import club.p6e.websocket.client.Callback;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 
 /**
@@ -26,7 +27,7 @@ public class Handler implements Callback {
     /** 是否异步 */
     private final boolean isAsync;
     /** 回调执行函数 */
-    private final LiveRoomCallback.DouYu callback;
+    private final LiveRoomCallback.HuYa callback;
 
     /**
      * 斗鱼客户端
@@ -36,17 +37,19 @@ public class Handler implements Callback {
     /**
      * 构造方法初始化
      * @param rid 房间 ID
+     * @param callback 回调函数
      */
-    public Handler(String rid, LiveRoomCallback.DouYu callback) {
+    public Handler(String rid, LiveRoomCallback.HuYa callback) {
         this(rid, new Decoder(), new Encoder(), callback, true);
     }
 
     /**
      * 构造方法初始化
      * @param rid 房间 ID
+     * @param callback 回调函数
      * @param isAsync 是否异步执行
      */
-    public Handler(String rid, LiveRoomCallback.DouYu callback, boolean isAsync) {
+    public Handler(String rid, LiveRoomCallback.HuYa callback, boolean isAsync) {
         this(rid, new Decoder(), new Encoder(), callback, isAsync);
     }
 
@@ -54,8 +57,9 @@ public class Handler implements Callback {
      * 构造方法初始化
      * @param rid 房间 ID
      * @param decoder 解码器
+     * @param callback 回调函数
      */
-    public Handler(String rid, Decoder decoder, LiveRoomCallback.DouYu callback) {
+    public Handler(String rid, Decoder decoder, LiveRoomCallback.HuYa callback) {
         this(rid, decoder, new Encoder(), callback, true);
     }
 
@@ -64,7 +68,7 @@ public class Handler implements Callback {
      * @param rid 房间 ID
      * @param encoder 编码器
      */
-    public Handler(String rid, Encoder encoder, LiveRoomCallback.DouYu callback) {
+    public Handler(String rid, Encoder encoder, LiveRoomCallback.HuYa callback) {
         this(rid, new Decoder(), encoder, callback, true);
     }
 
@@ -73,8 +77,9 @@ public class Handler implements Callback {
      * @param rid 房间 ID
      * @param decoder 解码器
      * @param encoder 编码器
+     * @param callback 回调函数
      */
-    public Handler(String rid, Decoder decoder, Encoder encoder, LiveRoomCallback.DouYu callback) {
+    public Handler(String rid, Decoder decoder, Encoder encoder, LiveRoomCallback.HuYa callback) {
         this(rid, decoder, encoder, callback, true);
     }
 
@@ -85,7 +90,7 @@ public class Handler implements Callback {
      * @param encoder 编码器
      * @param isAsync 是否异步执行
      */
-    public Handler(String rid, Decoder decoder, Encoder encoder, LiveRoomCallback.DouYu callback, boolean isAsync) {
+    public Handler(String rid, Decoder decoder, Encoder encoder, LiveRoomCallback.HuYa callback, boolean isAsync) {
         this.rid = rid;
         this.decoder = decoder;
         this.encoder = encoder;
@@ -104,23 +109,17 @@ public class Handler implements Callback {
     @Override
     public void onOpen(club.p6e.websocket.client.Client wc) {
         // 创建客户端对象
-        this.client = new Client(wc, this.encoder);
-        // 发送登录的信息
-        this.client.sendLoginMessage(this.rid);
-        // 发送加入的组的信息
-        this.client.sendGroupMessage(this.rid);
-        // 发送接收全部礼物的信息
-        this.client.sendAllGiftMessage();
-
+        this.client = new Client(wc, encoder, rid);
+        // 发送监听弹幕推送的消息
+        this.client.monitorEvent();
         // 心跳任务创建
-        new LiveRoomApplication.Task(45, 45, true) {
+        new LiveRoomApplication.Task(60, 60, true) {
             @Override
             public void execute() {
-                // 心跳
-                client.sendPantMessage();
+                // 发送监听弹幕推送的消息
+                client.monitorEvent();
             }
         };
-
         // 触发回调函数
         this.callback.onOpen(this.client);
     }
@@ -137,16 +136,14 @@ public class Handler implements Callback {
 
     @Override
     public void onMessageText(club.p6e.websocket.client.Client client, String message) {
-        LOGGER.error("[ DY: " + rid + " ] onMessageText ==> " + message
+        LOGGER.error("[ HuYa: " + rid + " ] onMessageText ==> " + message
                 + ", message format is incorrect and will be discarded.");
     }
 
     @Override
     public void onMessageBinary(club.p6e.websocket.client.Client client, ByteBuf byteBuf) {
         try {
-            // 解码得到消息对象
-            // 回调收到消息方法
-            this.callback.onMessage(this.client, decoder.decode(byteBuf));
+            this.callback.onMessage(this.client, this.decoder.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -160,7 +157,7 @@ public class Handler implements Callback {
             client.sendMessagePing();
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ DY: " + rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
+            LOGGER.error("[ HuYa: " + rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } finally {
             byteBuf.release();
@@ -173,7 +170,7 @@ public class Handler implements Callback {
             client.sendMessagePong();
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ DY: " + rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
+            LOGGER.error("[ HuYa: " + rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } finally {
             byteBuf.release();
@@ -185,7 +182,7 @@ public class Handler implements Callback {
         try {
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ DY: " + rid + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
+            LOGGER.error("[ HuYa: " + rid + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } finally {
             byteBuf.release();

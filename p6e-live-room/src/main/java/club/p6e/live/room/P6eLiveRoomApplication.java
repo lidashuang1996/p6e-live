@@ -19,8 +19,8 @@ public class P6eLiveRoomApplication {
         application.connect();
     }
 
-    public static LiveRoomApplication createHuYaLiveRoomApplication() {
-        return null;
+    public static void createHuYaLiveRoomApplication(club.p6e.live.room.platform.huya.Application application) {
+        application.connect();
     }
 
 }

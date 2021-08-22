@@ -18,32 +18,32 @@ public interface LiveRoomCallback {
      * 斗鱼直播的消息回调
      */
     public interface DouYu {
-        /**
-         * 回调的执行方法
-         * @param messages 消息对象
-         */
         public void onOpen(club.p6e.live.room.platform.douyu.Client client );
         public void onClose(club.p6e.live.room.platform.douyu.Client client );
         public void onError(club.p6e.live.room.platform.douyu.Client client ,Throwable throwable);
         public void onMessage(club.p6e.live.room.platform.douyu.Client client, List<club.p6e.live.room.platform.douyu.Message> messages);
     }
 
-
-
-
     /**
      * BliBli直播的消息回调
      */
     public interface BiLiBiLi {
-        /**
-         * 回调的执行方法
-         * @param messages 消息对象
-         */
         public void onOpen(club.p6e.live.room.platform.bilibili.Client client );
         public void onClose(club.p6e.live.room.platform.bilibili.Client client );
         public void onError(club.p6e.live.room.platform.bilibili.Client client ,Throwable throwable);
         public void onMessage(club.p6e.live.room.platform.bilibili.Client client, List<club.p6e.live.room.platform.bilibili.Message> messages);
     }
+
+    /**
+     * BliBli直播的消息回调
+     */
+    public interface HuYa {
+        public void onOpen(club.p6e.live.room.platform.huya.Client client );
+        public void onClose(club.p6e.live.room.platform.huya.Client client );
+        public void onError(club.p6e.live.room.platform.huya.Client client ,Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.huya.Client client, List<club.p6e.live.room.platform.huya.Message> messages);
+    }
+
 //
 //    /**
 //     * 火猫直播的消息回调
