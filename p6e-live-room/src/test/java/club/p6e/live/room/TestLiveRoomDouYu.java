@@ -31,7 +31,7 @@ public class TestLiveRoomDouYu {
 
     public void testRoom(String rid) {
         // 斗鱼房间消息监听
-        P6eLiveRoomApplication.createDouYuLiveRoomApplication(
+        P6eLiveRoomApplication.createDouYuLiveRoom(
                 new Application(rid, new LiveRoomCallback.DouYu() {
 
             @Override

@@ -29,7 +29,7 @@ public class TestLiveRoomBiLiBiLi {
 
     public void testRoom(String rid) {
         // 斗鱼房间消息监听
-        P6eLiveRoomApplication.createBiLiBiLiLiveRoomApplication(
+        P6eLiveRoomApplication.createBiLiBiLiLiveRoom(
                 new Application(rid, new LiveRoomCallback.BiLiBiLi() {
             @Override
             public void onOpen(Client client) {

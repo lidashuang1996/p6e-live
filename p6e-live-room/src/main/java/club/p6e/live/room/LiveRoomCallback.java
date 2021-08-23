@@ -44,26 +44,14 @@ public interface LiveRoomCallback {
         public void onMessage(club.p6e.live.room.platform.huya.Client client, List<club.p6e.live.room.platform.huya.Message> messages);
     }
 
-//
-//    /**
-//     * 火猫直播的消息回调
-//     */
-//    public interface HuoMao {
-//        /**
-//         * 回调的执行方法
-//         * @param messages 消息对象
-//         */
-//        public void execute(List<P6eHuoMaoChannelMessage> messages);
-//    }
-//
-//    /**
-//     * 快手直播的消息回调
-//     */
-//    public interface KuaiShou {
-//        /**
-//         * 回调的执行方法
-//         * @param messages 消息对象
-//         */
-//        public void execute(List<P6eKuaiShouChannelMessage> messages);
-//    }
+
+    /**
+     * BliBli直播的消息回调
+     */
+    public interface EGame {
+        public void onOpen(club.p6e.live.room.platform.egame.Client client );
+        public void onClose(club.p6e.live.room.platform.egame.Client client );
+        public void onError(club.p6e.live.room.platform.egame.Client client ,Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.egame.Client client, List<club.p6e.live.room.platform.egame.Message> messages);
+    }
 }

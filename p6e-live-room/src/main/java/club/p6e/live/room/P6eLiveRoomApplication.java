@@ -11,15 +11,19 @@ public class P6eLiveRoomApplication {
         LiveRoomApplication.init();
     }
 
-    public static void createDouYuLiveRoomApplication(club.p6e.live.room.platform.douyu.Application application) {
+    public static void createDouYuLiveRoom(club.p6e.live.room.platform.douyu.Application application) {
         application.connect();
     }
 
-    public static void createBiLiBiLiLiveRoomApplication(club.p6e.live.room.platform.bilibili.Application application) {
+    public static void createBiLiBiLiLiveRoom(club.p6e.live.room.platform.bilibili.Application application) {
         application.connect();
     }
 
-    public static void createHuYaLiveRoomApplication(club.p6e.live.room.platform.huya.Application application) {
+    public static void createHuYaLiveRoom(club.p6e.live.room.platform.huya.Application application) {
+        application.connect();
+    }
+
+    public static void createEGameLiveRoom(club.p6e.live.room.platform.egame.Application application) {
         application.connect();
     }
 

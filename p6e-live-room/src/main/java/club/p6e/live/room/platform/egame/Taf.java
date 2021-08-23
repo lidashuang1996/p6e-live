@@ -1,10 +1,12 @@
-package club.p6e.live.room.platform.huya;
+package club.p6e.live.room.platform.egame;
+
+import club.p6e.live.room.utils.Utils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * @author lidashuang
@@ -68,6 +70,9 @@ public final class Taf {
          * @return 根据类型读取数据对象
          */
         public Object getData(int type, ByteBuf input) {
+            return getData(type, input, false);
+        }
+        public Object getData(int type, ByteBuf input, boolean is) {
             Object o;
             switch (type) {
                 case 0:
@@ -89,10 +94,10 @@ public final class Taf {
                     o = getDouble(input);
                     break;
                 case 6:
-                    o = getString1(input);
+                    o = getString1(input, is);
                     break;
                 case 7:
-                    o = getString4(input);
+                    o = getString4(input, is);
                     break;
                 case 8:
                     o = getMap(input);
@@ -203,10 +208,30 @@ public final class Taf {
          * @param input 输入流对象
          * @return 字符串
          */
-        public String getString1(ByteBuf input) {
-            final byte[] bytes = new byte[getInt1(input)];
-            input.readBytes(bytes);
-            return new String(bytes);
+        public Object getString1(ByteBuf input) {
+            return getString1(input, false);
+        }
+        public Object getString1(ByteBuf input, boolean is) {
+            int len = getInt1(input);
+            if (is) {
+                if (len > 0) {
+                    ByteBuf byteBuf = null;
+                    try {
+                        byteBuf = input.readBytes(len);
+                        return execute(byteBuf);
+                    } finally {
+                        if (byteBuf != null) {
+                            byteBuf.release();
+                        }
+                    }
+                } else {
+                    throw new RuntimeException("get string1 len <= 0");
+                }
+            } else {
+                final byte[] bytes = new byte[len];
+                input.readBytes(bytes);
+                return new String(bytes);
+            }
         }
 
         /**
@@ -214,10 +239,23 @@ public final class Taf {
          * @param input 输入流对象
          * @return 字符串
          */
-        public String getString4(ByteBuf input) {
-            final byte[] bytes = new byte[getInt4(input)];
-            input.readBytes(bytes);
-            return new String(bytes);
+        public Object getString4(ByteBuf input) {
+            return getString4(input, false);
+        }
+        public Object getString4(ByteBuf input, boolean is) {
+            int len = getInt4(input);
+            if (is) {
+                len = len - 2;
+                if (len > 0) {
+                    return execute(input.readBytes(len));
+                } else {
+                    throw new RuntimeException("get string2 len <= 0");
+                }
+            } else {
+                final byte[] bytes = new byte[len];
+                input.readBytes(bytes);
+                return new String(bytes);
+            }
         }
 
         /**
@@ -260,7 +298,7 @@ public final class Taf {
          * @return List
          */
         public List<Object> getList(ByteBuf input) {
-            final int len = getLengthType(input);
+            int len = getLengthType(input);
             if (len < 0) {
                 return null;
             }
@@ -274,7 +312,7 @@ public final class Taf {
         public Object getListValue(ByteBuf input) {
             final int[] info = getInfo(input);
             if (info[0] == 0) {
-                return getData(info[1], input);
+                return getData(info[1], input, true);
             }
             throw new RuntimeException("list value error.");
         }
@@ -300,17 +338,14 @@ public final class Taf {
                 final int len = getLengthType(input);
                 final ByteBuf byteBuf = input.readBytes(len);
                 try {
-                    // 0x7b ... 0x7d
-                    if (byteBuf.readByte() == 0x7b) {
-                        final byte[] bytes = new byte[byteBuf.resetReaderIndex().readerIndex()];
-                        byteBuf.readBytes(bytes);
-                        return bytes;
-                    } else {
-                        return execute(byteBuf.resetReaderIndex());
-                    }
+                    final byte[] bytes = new byte[byteBuf.readerIndex()];
+                    byteBuf.readBytes(bytes);
+                    return bytes;
                 } catch (Exception e) {
                     e.printStackTrace();
                     return new HashMap<>();
+                } finally {
+                    byteBuf.release();
                 }
             }
             throw new RuntimeException("simple list type error.");
