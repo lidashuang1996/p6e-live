@@ -374,7 +374,8 @@ public final class Taf {
                     final double od = (double) o;
                     setInfo(out, tag, 5);
                     out.writeDouble(od);
-                } else if (o instanceof final String os) {
+                } else if (o instanceof String) {
+                    final String os = (String) o;
                     final int len = os.length();
                     if (len < 0xFF) {
                         setInfo(out, tag, 6);

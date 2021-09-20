@@ -89,7 +89,7 @@ public class Application extends LiveRoomApplication {
         if (CONNECTOR == null) {
             throw new RuntimeException("connect operation connector is null.");
         } else {
-            this.channel = CONNECTOR.connect(new Config(url), handler, handler.isAsync());
+            CONNECTOR.connect(new Config(url), handler, handler.isAsync());
         }
     }
 

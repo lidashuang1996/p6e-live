@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>抖音签名程序</title>
+	<script type="text/javascript" src="./acrawler.js"></script>
+	<script type="text/javascript" src="./qm.js"></script>
+</head>
+<body>
+	<h1>抖音签名程序</h1>
+	<h2 id="date"></h2>
+	<h3>不要关闭这个页面，请核对时间是否为北京时间</h3>
+</body>
+<script type="text/javascript">
+    dateTime();
+		setInterval(() => dateTime(), 1000);
+		function dateTime() {
+		    const date = new Date();
+        const y = date.getFullYear();
+        const m1 = date.getMonth() + 1;
+        const d = date.getDate();
+        const h = date.getHours();
+        const m2 = date.getMinutes();
+        const s = date.getSeconds();
+        document.getElementById('date').innerText = y + '/' + m1 + '/' + d + ' ' + h + ':' + m2 + ':' + s;
+    }
+
+		const ws = new WebSocket('ws://127.0.0.1:8080/ws');
+
+		ws.onopen = function (e) {
+				console.log(e);
+		};
+
+		ws.onerror = function (e) {
+				console.log(e);
+		};
+
+		ws.onmessage = function (e) {
+		    const data = String(e.data);
+				console.log('收到 ==> ' + data);
+				if (data.indexOf('@@@') >= 0) {
+            const ds = data.split('@@@');
+				    signature(ds[0], ds[1]);
+				}
+		};
+
+		function signature(mark, url) {
+				const xhr = new XMLHttpRequest()
+				xhr.onreadystatechange = function () {
+						if (xhr.readyState === 4) {
+                console.log('发送 ==> ' + mark + '@@@' + xhr._url);
+								ws.send(mark + '@@@' + xhr._url);
+						}
+				};
+				xhr.open('get', url);
+				xhr.send();
+				xhr.abort();
+		}
+</script>
+</html>

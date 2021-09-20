@@ -1,6 +1,5 @@
 package club.p6e.live.room;
 
-import io.netty.channel.ChannelHandlerContext;
 import java.util.List;
 
 /**
@@ -9,10 +8,6 @@ import java.util.List;
  * @version 1.0
  */
 public interface LiveRoomCallback {
-
-    public void onOpen(ChannelHandlerContext context, List<club.p6e.live.room.platform.douyu.Message> messages);
-    public void onClose(ChannelHandlerContext context, List<club.p6e.live.room.platform.douyu.Message> messages);
-    public void onError(ChannelHandlerContext context, List<club.p6e.live.room.platform.douyu.Message> messages);
 
     /**
      * 斗鱼直播的消息回调
@@ -53,5 +48,27 @@ public interface LiveRoomCallback {
         public void onClose(club.p6e.live.room.platform.egame.Client client );
         public void onError(club.p6e.live.room.platform.egame.Client client ,Throwable throwable);
         public void onMessage(club.p6e.live.room.platform.egame.Client client, List<club.p6e.live.room.platform.egame.Message> messages);
+    }
+
+
+    /**
+     * BliBli直播的消息回调
+     */
+    public interface Look {
+        public void onOpen(club.p6e.live.room.platform.look.Client client );
+        public void onClose(club.p6e.live.room.platform.look.Client client );
+        public void onError(club.p6e.live.room.platform.look.Client client ,Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.look.Client client, List<club.p6e.live.room.platform.look.Message> messages);
+    }
+
+
+    /**
+     * DouYin
+     */
+    public interface DouYin {
+        public void onOpen( );
+        public void onClose( );
+        public void onError(Throwable throwable);
+        public void onMessage(List<club.p6e.live.room.platform.douyin.Message> messages);
     }
 }

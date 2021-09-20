@@ -186,7 +186,7 @@ public class Client {
 //        type: 0、3、9用户发言；7、33礼物信息；29、35欢迎信息；24、31系统提醒；23关注信息
 //        """
 
-        client.sendMessageBinary(encoder.encode(Message.create(loginMessage)));
+//        client.sendMessageBinary(encoder.encode(Message.create(loginMessage)));
     }
 
     /**

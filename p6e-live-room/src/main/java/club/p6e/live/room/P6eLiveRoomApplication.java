@@ -27,4 +27,12 @@ public class P6eLiveRoomApplication {
         application.connect();
     }
 
+    public static void createLookLiveRoom(club.p6e.live.room.platform.look.Application application) {
+        application.connect();
+    }
+
+    public static void createDouYinLiveRoom(club.p6e.live.room.platform.douyin.Application application) {
+        application.connect();
+    }
+
 }

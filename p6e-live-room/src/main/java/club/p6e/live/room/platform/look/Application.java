@@ -1,4 +1,4 @@
-package club.p6e.live.room.platform.egame;
+package club.p6e.live.room.platform.look;
 
 import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
@@ -11,9 +11,6 @@ import io.netty.channel.Channel;
  */
 public class Application extends LiveRoomApplication {
 
-    /** 默认的 WebSocket URL 地址 */
-    private static final String DEFAULT_WEB_SOCKET_URL = "wss://barragepush.egame.qq.com/pubsub";
-
     /** URL */
     private final String url;
     /** 处理器对象 */
@@ -24,50 +21,21 @@ public class Application extends LiveRoomApplication {
 
     /**
      * 构造方法初始化
-     * @param rid 房间的 ID
+     * @param url WebSocket 地址
      * @param callback 回调的函数
      */
-    public Application(String rid, LiveRoomCallback.EGame callback) {
-        this(DEFAULT_WEB_SOCKET_URL, new Handler(rid, new Decoder(), new Encoder(), callback, true));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param rid 房间的 ID
-     * @param callback 回调的函数
-     * @param isAsync 是否异步执行
-     */
-    public Application(String rid, LiveRoomCallback.EGame callback, boolean isAsync) {
-        this(DEFAULT_WEB_SOCKET_URL, new Handler(rid, new Decoder(), new Encoder(), callback, isAsync));
+    public Application(String url, String[] init, LiveRoomCallback.Look callback) {
+        this(url, new Handler(init, new Decoder(), new Encoder(), callback, true));
     }
 
     /**
      * 构造方法初始化
      * @param url WebSocket 地址
-     * @param rid 房间的 ID
-     * @param callback 回调的函数
-     */
-    public Application(String url, String rid, LiveRoomCallback.EGame callback) {
-        this(url, new Handler(rid, new Decoder(), new Encoder(), callback, true));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param url WebSocket 地址
-     * @param rid 房间的 ID
      * @param callback 回调的函数
      * @param isAsync 是否异步执行
      */
-    public Application(String url, String rid, LiveRoomCallback.EGame callback, boolean isAsync) {
-        this(url, new Handler(rid, new Decoder(), new Encoder(), callback, isAsync));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param handler 处理器对象
-     */
-    public Application(Handler handler) {
-        this(DEFAULT_WEB_SOCKET_URL, handler);
+    public Application(String url, String[] init, LiveRoomCallback.Look callback, boolean isAsync) {
+        this(url, new Handler(init, new Decoder(), new Encoder(), callback, isAsync));
     }
 
     /**
@@ -89,6 +57,7 @@ public class Application extends LiveRoomApplication {
         if (CONNECTOR == null) {
             throw new RuntimeException("connect operation connector is null.");
         } else {
+            System.out.println(url);
             CONNECTOR.connect(new Config(url), handler, handler.isAsync());
         }
     }
