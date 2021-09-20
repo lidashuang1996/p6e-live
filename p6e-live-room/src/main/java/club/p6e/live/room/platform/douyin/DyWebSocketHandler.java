@@ -1,5 +1,6 @@
 package club.p6e.live.room.platform.douyin;
 
+import club.p6e.live.room.LiveRoomApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,15 +16,43 @@ public class DyWebSocketHandler implements WebSocketHandler {
 
     /** 分割符号 */
     private static final String CHAR = "@@@";
+    /** 心跳内容 */
+    private static final long HEARTBEAT_DATE_TIME = 100000;
+    private static final String HEARTBEAT_CHAR = "{\"type\": \"heartbeat\"}";
     /** WS 对象 */
     private static volatile WebSocketSession WS = null;
+    private static volatile long WS_DATE_TIME = -1L;
     /** 注入日志对象 */
     private static final Logger LOGGER = LoggerFactory.getLogger(DyWebSocketHandler.class);
+
+    static {
+        // 心跳任务创建
+        new LiveRoomApplication.Task(60, 60, true) {
+            @Override
+            public void execute() {
+                if (WS != null) {
+                    if (WS.isOpen()) {
+                        if (System.currentTimeMillis() + HEARTBEAT_DATE_TIME <= WS_DATE_TIME) {
+                            // 发送心跳
+                            sendMessage(HEARTBEAT_CHAR);
+                            return;
+                        }
+                    }
+                    try {
+                        WS.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {
         if (WS == null) {
             WS = webSocketSession;
+            WS_DATE_TIME = System.currentTimeMillis();
             sendMessage("[ " + webSocketSession.getId() + " ] client connect success");
             LOGGER.info("[ " + webSocketSession.getId() + " ] client is successfully connected.");
         } else {
@@ -51,6 +80,9 @@ public class DyWebSocketHandler implements WebSocketHandler {
             if (content.contains(CHAR)) {
                 final String[] cs = content.split(CHAR);
                 Signature.callback(cs[0], cs[1]);
+            } else if (HEARTBEAT_CHAR.equals(content)) {
+                WS_DATE_TIME = System.currentTimeMillis();
+                sendMessage(HEARTBEAT_CHAR);
             }
         }
     }
@@ -64,6 +96,7 @@ public class DyWebSocketHandler implements WebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
         WS = null;
+        WS_DATE_TIME = -1;
         LOGGER.info("[ afterConnectionClosed ] CLIENT ID: "
                 + webSocketSession.getId() + " ==> closeStatus: " + closeStatus);
     }

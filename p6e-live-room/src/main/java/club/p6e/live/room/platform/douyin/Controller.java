@@ -16,7 +16,7 @@ public class Controller {
 
     @RequestMapping
     public String aaa() {
-        new Application("7009898332214545189", new LiveRoomCallback.DouYin() {
+        new Application("7009940465588357924", new LiveRoomCallback.DouYin() {
             @Override
             public void onOpen() {
                 System.out.println("onOpen");

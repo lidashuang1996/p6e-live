@@ -28,7 +28,13 @@
 		const ws = new WebSocket('ws://127.0.0.1:8080/ws');
 
 		ws.onopen = function (e) {
-				console.log(e);
+				const heartbeat = () => {
+            console.log('发送 ==> {"type": "heartbeat"}');
+            ws.send('{"type": "heartbeat"}')
+            setTimeout(() => heartbeat(), 60000);
+				}
+        console.log(e);
+        heartbeat();
 		};
 
 		ws.onerror = function (e) {

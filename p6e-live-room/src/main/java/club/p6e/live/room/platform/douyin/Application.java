@@ -174,8 +174,4 @@ public class Application extends LiveRoomApplication {
             this.shutdown();
         }
     }
-
-    public static void main(String[] args) {
-        System.out.println(new Application("123", null).getTranslationUrl());
-    }
 }
