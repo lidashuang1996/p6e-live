@@ -11,6 +11,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 /**
@@ -49,6 +51,7 @@ public class Application extends LiveRoomApplication {
     private final String url;
     /** 回调函数 */
     private final LiveRoomCallback.DouYin callback;
+    private final Decoder decoder = new Decoder();
 
     /**
      * 构造方法初始化
@@ -122,7 +125,15 @@ public class Application extends LiveRoomApplication {
      * @return 请求地址
      */
     private String getTranslationUrl(String ext, String cursor, String rtt) {
-        return Utils.translate(url, "rid", rid, "ext", ext, "cursor", cursor, "rtt", rtt);
+        try {
+            return Utils.translate(url,
+                    "rid", rid,
+                    "ext", URLEncoder.encode(ext, "UTF-8"),
+                    "cursor", URLEncoder.encode(cursor, "UTF-8"),
+                    "rtt", URLEncoder.encode(rtt, "UTF-8"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -152,16 +163,20 @@ public class Application extends LiveRoomApplication {
                             if (bool) {
                                 this.callback.onOpen();
                             }
-                            System.out.println(byteBuf.readByte());
-//                            this.callback.onMessage();
-                            // 执行下一个任务
-//                            try {
-//                                // 休眠1S后继续执行
-//                                Thread.sleep(1000);
-//                                Signature.execute(id, getTranslationUrl("1", "", ""));
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
+                            final Message message = decoder.decode(byteBuf);
+                            this.callback.onMessage(message);
+                            try {
+                                final long rtt = System.currentTimeMillis() % 1000;
+                                final long sleep = Utils.objectToLong(message.get(3));
+                                final String ext = Utils.objectToString(message.get(5));
+                                final String[] extList = ext.split("\\|");
+                                final String cursor = (extList.length >= 5
+                                        && extList[4] != null && extList.length > 12) ? extList[4].substring(12) : "";
+                                Thread.sleep(sleep);
+                                Signature.execute(id, getTranslationUrl(ext, cursor, String.valueOf(rtt)));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         } finally {
                             byteBuf.release();
                         }

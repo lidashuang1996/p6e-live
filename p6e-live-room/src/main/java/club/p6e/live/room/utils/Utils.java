@@ -353,4 +353,32 @@ public final class Utils {
         System.arraycopy(bytes, start, result, 0, len);
         return result;
     }
+
+    public static int objectToInt(Object o) {
+        if (o instanceof Integer) {
+            return (int) o;
+        } else if (o instanceof String) {
+            return Integer.parseInt(String.valueOf(o));
+        } else {
+            throw new RuntimeException("objectToInt error.");
+        }
+    }
+
+    public static long objectToLong(Object o) {
+        if (o instanceof Long) {
+            return (long) o;
+        } else if (o instanceof String) {
+            return Long.parseLong(String.valueOf(o));
+        } else {
+            throw new RuntimeException("objectToInt error.");
+        }
+    }
+
+    public static String objectToString(Object o) {
+        if (o == null) {
+            return null;
+        } else {
+            return o.toString();
+        }
+    }
 }

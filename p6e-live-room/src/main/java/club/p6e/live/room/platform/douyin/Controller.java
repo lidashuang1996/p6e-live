@@ -1,10 +1,10 @@
 package club.p6e.live.room.platform.douyin;
 
 import club.p6e.live.room.LiveRoomCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * @author lidashuang
@@ -14,9 +14,11 @@ import java.util.List;
 @RequestMapping("/dy")
 public class Controller {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
+
     @RequestMapping
     public String aaa() {
-        new Application("7009940465588357924", new LiveRoomCallback.DouYin() {
+        new Application("7010356842513615652", new LiveRoomCallback.DouYin() {
             @Override
             public void onOpen() {
                 System.out.println("onOpen");
@@ -33,8 +35,8 @@ public class Controller {
             }
 
             @Override
-            public void onMessage(List<Message> messages) {
-                System.out.println("messages" + messages);
+            public void onMessage(Message message) {
+                LOGGER.info(message.toString());
             }
         }).connect();
         return "success";
