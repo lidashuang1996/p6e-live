@@ -10,8 +10,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.UUID;
 
@@ -167,15 +168,14 @@ public class Application extends LiveRoomApplication {
                             this.callback.onMessage(message);
                             try {
                                 final long rtt = System.currentTimeMillis() % 1000;
-                                final long sleep = Utils.objectToLong(message.get(3));
                                 final String ext = Utils.objectToString(message.get(5));
                                 final String[] extList = ext.split("\\|");
                                 final String cursor = (extList.length >= 5
                                         && extList[4] != null && extList.length > 12) ? extList[4].substring(12) : "";
-                                Thread.sleep(sleep);
+                                Thread.sleep(1000);
                                 Signature.execute(id, getTranslationUrl(ext, cursor, String.valueOf(rtt)));
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                throw new IOException(e);
                             }
                         } finally {
                             byteBuf.release();
@@ -185,6 +185,7 @@ public class Application extends LiveRoomApplication {
                 return null;
             }, null, null, null);
         } catch (Exception e) {
+            e.printStackTrace();
             this.callback.onError(e);
             this.shutdown();
         }
