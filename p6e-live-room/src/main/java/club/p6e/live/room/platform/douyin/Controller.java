@@ -1,13 +1,12 @@
 package club.p6e.live.room.platform.douyin;
 
 import club.p6e.live.room.LiveRoomCallback;
-import club.p6e.live.room.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,14 +15,15 @@ import java.util.Map;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/dy")
+@RequestMapping("/douyin")
 public class Controller {
 
+    /** 注入日志对象 */
     private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
-    @RequestMapping
-    public String aaa() {
-        new Application("7011070045270952718", new LiveRoomCallback.DouYin() {
+    @RequestMapping("/{id}")
+    public String id(@PathVariable String id) {
+        new Application(id, new LiveRoomCallback.DouYin() {
             @Override
             public void onOpen() {
                 System.out.println("onOpen");
@@ -44,9 +44,8 @@ public class Controller {
                 getData2(message.get(1));
             }
         }).connect();
-        return "success";
+        return "SUCCESS";
     }
-
 
     private static Object getData(Object aa, Object key) {
         if (aa instanceof Map) {
