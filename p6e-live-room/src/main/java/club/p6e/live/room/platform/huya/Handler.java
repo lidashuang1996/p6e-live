@@ -13,6 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
+ * 虎牙: https://www.huya.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * 虎牙连接处理器对象
+ *
  * @author lidashuang
  * @version 1.0
  */
@@ -195,6 +201,7 @@ public class Handler implements P6eWebSocketCallback {
         try {
             // 解码得到消息对象
             // 回调收到消息方法
+            System.out.println(byteBuf);
             this.callback.onMessage(this.clientHuYa, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();

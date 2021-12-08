@@ -1,6 +1,7 @@
 package club.p6e.live.room.platform.huya;
 
 import club.p6e.live.room.LiveRoomCodec;
+import club.p6e.live.room.utils.Utils;
 import club.p6e.websocket.client.P6eWebSocketClient;
 import io.netty.buffer.ByteBuf;
 
@@ -8,17 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 虎牙: https://www.huya.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * 虎牙客户端
+ *
  * @author lidashuang
  * @version 1.0
  */
 public class Client {
 
     /**
-     * 斗鱼: https://www.douyu.com/
+     * 虎牙: https://www.huya.com/
      * 开源项目地址: http://live.p6e.club/
      * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
      *
-     * 斗鱼客户端增强器
+     * 虎牙客户端增强器
      *
      * @author lidashuang
      * @version 1.0
@@ -57,6 +64,10 @@ public class Client {
         ByteBuf byteBuf = null;
         try {
             byteBuf = this.codec.encode(message);
+            final byte[] bs = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bs);
+            System.out.println(Utils.bytesToHex(bs));
+            byteBuf.resetReaderIndex();
             this.p6eWebSocketClient.sendMessageBinary(byteBuf);
         } finally {
             if (byteBuf != null) {

@@ -8,6 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 虎牙: https://www.huya.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * 虎牙消息对象建造解构器
+ *
  * @author lidashuang
  * @version 1.0
  */
