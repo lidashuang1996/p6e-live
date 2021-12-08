@@ -42,7 +42,7 @@ public class Message extends LiveRoomMessage {
      */
     public Integer length() {
         final Object o = this.get(LENGTH_KEY);
-        return o == null ? null : Integer.parseInt(String.valueOf(o));
+        return o == null ? null : Double.valueOf(String.valueOf(o)).intValue();
     }
 
     /**

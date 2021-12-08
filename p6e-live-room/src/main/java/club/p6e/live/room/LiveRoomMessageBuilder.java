@@ -1,17 +1,17 @@
 package club.p6e.live.room;
 
-import club.p6e.live.room.platform.douyu.Message;
-
-import java.util.HashMap;
 
 /**
  * @author lidashuang
  * @version 1.0
  */
-public abstract class LiveRoomMessageBuilder {
+public abstract class LiveRoomMessageBuilder<T extends LiveRoomMessage> {
 
-    public abstract Message deserialization(byte[] contentBytes);
+    /** 符号 */
+    protected static final String SYMBOL_$ = "$";
 
-    public abstract byte[] serialization(Message message);
+    public abstract T deserialization(byte[] bytes);
+
+    public abstract byte[] serialization(T message);
 
 }

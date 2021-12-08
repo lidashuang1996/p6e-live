@@ -10,8 +10,8 @@ import java.util.List;
  */
 public abstract class LiveRoomCodec<T extends LiveRoomMessage> {
 
-    protected LiveRoomMessageBuilder builder;
-    public LiveRoomCodec(LiveRoomMessageBuilder builder) {
+    protected LiveRoomMessageBuilder<T> builder;
+    public LiveRoomCodec(LiveRoomMessageBuilder<T> builder) {
         this.builder = builder;
     }
 

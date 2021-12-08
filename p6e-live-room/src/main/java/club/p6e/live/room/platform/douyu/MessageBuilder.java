@@ -17,10 +17,9 @@ import java.util.*;
  * @author lidashuang
  * @version 1.0
  */
-public class MessageBuilder extends LiveRoomMessageBuilder {
+public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
 
     /** 符号 */
-    private static final String SYMBOL_$ = "$";
     private static final String SYMBOL_A = "@A";
     private static final String SYMBOL_S = "@S";
     private static final String SYMBOL_MARK = "@";

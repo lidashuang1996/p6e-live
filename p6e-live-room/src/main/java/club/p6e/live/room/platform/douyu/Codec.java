@@ -50,11 +50,14 @@ public class Codec extends LiveRoomCodec<Message> {
 
     @Override
     public List<Message> decode(ByteBuf byteBuf) {
+        // 解码的内容长度
+        LOGGER.debug("[ DouYu ] decode content length ==> " + byteBuf.readableBytes());
         return decodeByteBufToMessages(byteBuf);
     }
 
     @Override
     public ByteBuf encode(Message message) {
+        LOGGER.debug("[ DouYu ] encode message ==> " + message);
         return encodeMessageToByteBuf(message);
     }
 
@@ -113,6 +116,7 @@ public class Codec extends LiveRoomCodec<Message> {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            LOGGER.error("[ DouYu ] decode error ==> " + e.getMessage());
         }
         return result;
     }
@@ -137,7 +141,6 @@ public class Codec extends LiveRoomCodec<Message> {
      */
     public ByteBuf encodeMessageToByteBuf(Message message) {
         try {
-            LOGGER.debug("[ DouYu ] encode message ==> " + message);
             // 序列化消息
             final byte[] contents = this.builder.serialization(message);
             // 读取消息类型
