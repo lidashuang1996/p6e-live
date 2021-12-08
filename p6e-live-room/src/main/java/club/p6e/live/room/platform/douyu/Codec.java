@@ -139,7 +139,7 @@ public class Codec extends LiveRoomCodec<Message> {
         try {
             LOGGER.debug("[ DouYu ] encode message ==> " + message);
             // 序列化消息
-            final byte[] contents = this.builder.serialize(message);
+            final byte[] contents = this.builder.serialization(message);
             // 读取消息类型
             final int type = message.type() == null ? ROOM_SEND_MESSAGE_TYPE : message.type();
             // 消息长度 = 消息内容长度 + 消息长度在头部的长度 + 结束符号长度

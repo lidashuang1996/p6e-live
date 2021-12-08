@@ -149,13 +149,13 @@ public class Handler implements P6eWebSocketCallback {
             LOGGER.error("[ DouYu: " + this.rid + " ] onClose ==> " + e.getMessage());
         } finally {
             if (this.task == null) {
-                LOGGER.info("no started task.");
+                LOGGER.info("[ DouYu: " + this.rid + " ] no started task.");
             } else {
                 final String tid = this.task.getId();
-                LOGGER.info("start closing task [ " + tid + " ].");
+                LOGGER.info("[ DouYu: " + this.rid + " ] start closing task [ " + tid + " ].");
                 this.task.close();
                 this.task = null;
-                LOGGER.info("end closing task [ " + tid + " ].");
+                LOGGER.info("[ DouYu: " + this.rid + " ] end closing task [ " + tid + " ].");
             }
         }
     }

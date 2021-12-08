@@ -35,7 +35,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder {
     }
 
     @Override
-    public byte[] serialize(Message message) {
+    public byte[] serialization(Message message) {
         if (message == null) {
             return new byte[0];
         } else {
@@ -45,7 +45,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder {
                     map.put(key, message.get(key));
                 }
             }
-            return (serialization(map) + SYMBOL_SLASH).getBytes(StandardCharsets.UTF_8);
+            return (serializationMessageToString(map) + SYMBOL_SLASH).getBytes(StandardCharsets.UTF_8);
         }
     }
 
@@ -95,7 +95,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder {
      * @return 序列化后的内容
      */
     @SuppressWarnings("all")
-    public static String serialization(Object data) {
+    public static String serializationMessageToString(Object data) {
         if (data != null) {
             final Class<?> className = data.getClass();
             if (data instanceof Map) { // 是否是 kev-value
@@ -129,8 +129,8 @@ public class MessageBuilder extends LiveRoomMessageBuilder {
         final StringBuilder sb = new StringBuilder();
         if (data != null && data.size() > 0) {
             for (final Object o : data.keySet()) {
-                final String key = serializationTransferredMeaning(serialization(o));
-                final String value = serializationTransferredMeaning(serialization(data.get(o)));
+                final String key = serializationTransferredMeaning(serializationMessageToString(o));
+                final String value = serializationTransferredMeaning(serializationMessageToString(data.get(o)));
                 sb.append(key).append(SYMBOL_EQUAL).append(value).append(SYMBOL_SLASH);
             }
             return sb.length() > 0 ? sb.substring(0, sb.length() - 1) : "";
@@ -147,7 +147,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder {
         final StringBuilder sb = new StringBuilder();
         if (data != null && data.size() > 0) {
             for (final Object o : data) {
-                sb.append(serializationTransferredMeaning(serialization(o))).append(SYMBOL_SLASH);
+                sb.append(serializationTransferredMeaning(serializationMessageToString(o))).append(SYMBOL_SLASH);
             }
             return sb.length() > 0 ? sb.substring(0, sb.length() - 1) : "";
         }
@@ -177,7 +177,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder {
                     final String fieldName = field.getName();
                     final Object fieldValue = field.get(data);
                     sb.append(fieldName).append(SYMBOL_EQUAL).append(
-                            serializationTransferredMeaning(serialization(fieldValue))).append(SYMBOL_SLASH);
+                            serializationTransferredMeaning(serializationMessageToString(fieldValue))).append(SYMBOL_SLASH);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }

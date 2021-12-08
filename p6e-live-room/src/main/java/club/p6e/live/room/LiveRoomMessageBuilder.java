@@ -12,6 +12,6 @@ public abstract class LiveRoomMessageBuilder {
 
     public abstract Message deserialization(byte[] contentBytes);
 
-    public abstract byte[] serialize(Message message);
+    public abstract byte[] serialization(Message message);
 
 }
