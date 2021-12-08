@@ -217,7 +217,8 @@ public class Handler implements P6eWebSocketCallback {
         try {
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ BiliBili: " + this.rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
+            // 每次心跳都会 Ping 一下，可以返回 Pong 消息给他，日志等级降低
+            LOGGER.debug("[ BiliBili: " + this.rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -233,7 +234,8 @@ public class Handler implements P6eWebSocketCallback {
             client.sendMessagePong();
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ BiliBili: " + this.rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
+            // 每次心跳都会 Ping 一下，可以返回 Pong 消息给他，日志等级降低
+            LOGGER.debug("[ BiliBili: " + this.rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
             e.printStackTrace();

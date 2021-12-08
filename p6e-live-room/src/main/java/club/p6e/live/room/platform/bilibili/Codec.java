@@ -60,8 +60,8 @@ public class Codec extends LiveRoomCodec<Message> {
      * 解码操作
      * 解码操作将 ByteBuf 转换为消息对象
      *
-     * BliBli 接收消息
-     * BliBli 消息 = 消息头部
+     * BiliBili 接收消息
+     * BiliBili 消息 = 消息头部
      *              (
      *                  消息总长度 [ 大端模式转换 (4) ]
      *                  消息头部总长度 [ 数据包头部长度，固定为 16 (2) ]
@@ -102,19 +102,24 @@ public class Codec extends LiveRoomCodec<Message> {
                     final int type = byteBuf.readInt();
                     // 内容5 部分
                     final int spare = byteBuf.readInt();
-
                     // 验证是否符合接收消息的格式
                     if (len1 > HEADER_LENGTH && len2 == HEADER_LENGTH) {
                         final byte[] bytes =  new byte[len1 - HEADER_LENGTH];
                         byteBuf.readBytes(bytes);
                         if (agreement == 1) {
-                            final Message message = this.builder.deserialization(bytes);
+                            final Message message = new Message();
                             message.setType(type);
                             message.setSpare(spare);
                             message.setLength(len1);
                             message.setAgreement(agreement);
                             if (bytes.length == 4) {
-                                message.setData(Utils.bytesToIntBig(bytes));
+                                if (byteBuf.readableBytes() == 15) {
+                                    final byte[] pantBytes = new byte[15];
+                                    byteBuf.readBytes(pantBytes);
+                                    message.setData(new String(pantBytes, StandardCharsets.UTF_8));
+                                } else {
+                                    message.setData(Utils.bytesToIntBig(bytes));
+                                }
                             } else {
                                 message.setData(new String(bytes, StandardCharsets.UTF_8));
                             }
@@ -140,8 +145,7 @@ public class Codec extends LiveRoomCodec<Message> {
                                 // 内容5 部分
                                 final int mSpare = Utils.bytesToIntBig(Utils.bytesIntercept(mBytes, 12, 4));
                                 if (mLen1 > HEADER_LENGTH && mLen2 == HEADER_LENGTH) {
-                                    final Message message = new Message();
-                                    message.setData(new String(bytes));
+                                    final Message message = this.builder.deserialization(Utils.bytesIntercept(mBytes, 16, mBytes.length - 16));
                                     message.setType(mType);
                                     message.setSpare(mSpare);
                                     message.setLength(mLen1);
@@ -155,8 +159,15 @@ public class Codec extends LiveRoomCodec<Message> {
                                 }
                             }
                         } else {
-                            final Message message = new Message();
-                            message.setData(new String(bytes, StandardCharsets.UTF_8));
+                            Message message;
+                            try {
+                                // 是否能序列化
+                                message = this.builder.deserialization(bytes);
+                            } catch (Exception e) {
+                                // 不能序列化就字符串保存
+                                message = new Message();
+                                message.setData(new String(bytes, StandardCharsets.UTF_8));
+                            }
                             message.setType(type);
                             message.setSpare(spare);
                             message.setLength(len1);
@@ -190,8 +201,8 @@ public class Codec extends LiveRoomCodec<Message> {
      * 编码操作
      * 编码操作将消息对象转换为 ByteBuf 对象
      *
-     * BliBli 发送消息
-     * BliBli 消息 = 消息头部
+     * BiliBili 发送消息
+     * BiliBili 消息 = 消息头部
      *              (
      *                  消息总长度 [ 大端模式转换 (4) ]
      *                  消息头部总长度 [ 数据包头部长度，固定为 16 (2) ]

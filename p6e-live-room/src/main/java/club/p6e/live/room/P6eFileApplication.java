@@ -44,7 +44,7 @@ public class P6eFileApplication {
 //
 //            }
 //        }).connect();
-        new club.p6e.live.room.platform.bilibili.Application("9922197", new LiveRoomCallback.BiLiBiLi() {
+        new club.p6e.live.room.platform.bilibili.Application("8345602", new LiveRoomCallback.BiLiBiLi() {
             @Override
             public void onOpen(club.p6e.live.room.platform.bilibili.Client client) {
 
