@@ -15,24 +15,24 @@ public class P6eLiveRoomApplication {
         application.connect();
     }
 
-    public static void createBiLiBiLiLiveRoom(club.p6e.live.room.platform.bilibili.Application application) {
-        application.connect();
-    }
-
-    public static void createHuYaLiveRoom(club.p6e.live.room.platform.huya.Application application) {
-        application.connect();
-    }
-
-    public static void createEGameLiveRoom(club.p6e.live.room.platform.egame.Application application) {
-        application.connect();
-    }
-
-    public static void createLookLiveRoom(club.p6e.live.room.platform.look.Application application) {
-        application.connect();
-    }
-
-    public static void createDouYinLiveRoom(club.p6e.live.room.platform.douyin.Application application) {
-        application.connect();
-    }
+//    public static void createBiLiBiLiLiveRoom(club.p6e.live.room.platform.bilibili.Application application) {
+//        application.connect();
+//    }
+//
+//    public static void createHuYaLiveRoom(club.p6e.live.room.platform.huya.Application application) {
+//        application.connect();
+//    }
+//
+//    public static void createEGameLiveRoom(club.p6e.live.room.platform.egame.Application application) {
+//        application.connect();
+//    }
+//
+//    public static void createLookLiveRoom(club.p6e.live.room.platform.look.Application application) {
+//        application.connect();
+//    }
+//
+//    public static void createDouYinLiveRoom(club.p6e.live.room.platform.douyin.Application application) {
+//        application.connect();
+//    }
 
 }

@@ -1,60 +1,96 @@
 package club.p6e.live.room.platform.douyu;
 
-import java.util.ArrayList;
+import club.p6e.live.room.LiveRoomCodec;
+import club.p6e.websocket.client.P6eWebSocketClient;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
+ *
+ * 斗鱼: https://www.douyu.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * 斗鱼客户端对象
+ *
  * @author lidashuang
  * @version 1.0
  */
 public class Client {
 
-    /** 编码器 */
-    private final Encoder encoder;
+    /**
+     * 斗鱼: https://www.douyu.com/
+     * 开源项目地址: http://live.p6e.club/
+     * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+     *
+     * 斗鱼客户端增强器
+     *
+     * @author lidashuang
+     * @version 1.0
+     */
+    public interface Intensifier {
+        /**
+         * 增强原本的客户端对象
+         * @param client 客户端对象
+         * @return 客户端对象
+         */
+        public Client enhance(Client client);
+    }
+
+    /** RID */
+    private final String rid;
+    /** 编解码器 */
+    private final LiveRoomCodec<Message> codec;
     /** WebSocket 客户端对象 */
-    private final club.p6e.websocket.client.Client client;
+    private final P6eWebSocketClient p6eWebSocketClient;
 
     /**
      * 构造方法初始化
-     * @param client 客户端对象
-     * @param encoder 编码器对象
+     * @param rid RID
+     * @param p6eWebSocketClient WebSocket 客户端对象
      */
-    public Client(club.p6e.websocket.client.Client client, Encoder encoder) {
-        this.client = client;
-        this.encoder = encoder;
+    public Client(String rid, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
+        this.rid = rid;
+        this.codec = codec;
+        this.p6eWebSocketClient = p6eWebSocketClient;
     }
 
     /**
      * 发送登录的消息
-     * @param rid 房间的编号
      */
-    public void sendLoginMessage(String rid) {
-        final Map<String, String> loginMessage = new HashMap<>(2);
-        loginMessage.put("roomid", rid);
-        loginMessage.put("type", "loginreq");
-        client.sendMessageBinary(encoder.encode(Message.create(loginMessage)));
+    public void sendLoginMessage() {
+        final Message message = new Message();
+        final Map<String, String> dfl = new HashMap<>(2);
+        dfl.put("ss", "1");
+        dfl.put("sn", "105");
+        message.put("uid", "69328905");
+        message.put("ct", "0");
+        message.put("ver", "20190610");
+        message.put("dfl", new Object[] { dfl });
+        message.put("type", "loginreq");
+        message.put("roomid", rid);
+        message.put("username", "69328905");
+        message.put("aver", "218101901");
+        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
     }
 
     /**
      * 发送加入组的消息
-     * @param rid 房间的编号
      */
-    public void sendGroupMessage(String rid) {
-        final Map<String, String> groupMessage = new HashMap<>(2);
-        groupMessage.put("rid", rid);
-        groupMessage.put("gid", "-9999");
-        groupMessage.put("type", "joingroup");
-        client.sendMessageBinary(encoder.encode(Message.create(groupMessage)));
+    public void sendGroupMessage() {
+        final Message message = new Message();
+        message.put("rid", rid);
+        message.put("gid", "1");
+        message.put("type", "joingroup");
+        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
     }
 
     /**
      * 发送接收全部礼物消息
      */
     public void sendAllGiftMessage() {
-        final Map<String, Object> allGiftMessage = new HashMap<>(2);
-        allGiftMessage.put("type", "dmfbdreq");
+        final Message message = new Message();
+        message.put("type", "dmfbdreq");
         Map<String, Integer> dfl1 = new HashMap<>(2);
         dfl1.put("ss", 0);
         dfl1.put("sn", 105);
@@ -70,22 +106,26 @@ public class Client {
         Map<String, Integer> dfl5 = new HashMap<>(2);
         dfl5.put("ss", 0);
         dfl5.put("sn", 110);
-        final List<Map<String, Integer>> dfl = new ArrayList<>(5);
-        dfl.add(dfl1);
-        dfl.add(dfl2);
-        dfl.add(dfl3);
-        dfl.add(dfl4);
-        dfl.add(dfl5);
-        allGiftMessage.put("dfl", dfl);
-        client.sendMessageBinary(encoder.encode(Message.create(allGiftMessage)));
+        Map<String, Integer> dfl6 = new HashMap<>(2);
+        dfl5.put("ss", 0);
+        dfl5.put("sn", 901);
+        message.put("dfl", new Object[] { dfl1, dfl2, dfl3, dfl4, dfl5, dfl6 });
+        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
     }
 
     /**
      * 发送心跳消息
      */
     public void sendPantMessage() {
-        final Map<String, String> pantMessage = new HashMap<>(1);
-        pantMessage.put("type", "mrkl");
-        client.sendMessageBinary(encoder.encode(Message.create(pantMessage)));
+        final Message message = new Message();
+        message.put("type", "mrkl");
+        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
+    }
+
+    /**
+     * 发送消息
+     */
+    public void sendMessage(Message message) {
+        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
     }
 }

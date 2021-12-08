@@ -16,7 +16,7 @@ public abstract class LiveRoomApplication {
     /**
      * 连接器对象
      */
-    protected static Connector CONNECTOR;
+    protected static Connector WEBSOCKET_CONNECTOR;
 
     /**
      * 任务队列
@@ -25,6 +25,9 @@ public abstract class LiveRoomApplication {
 
 
     public static abstract class Task {
+
+        private String id;
+
         /**
          * 等候时间, 单位秒
          */
@@ -54,6 +57,10 @@ public abstract class LiveRoomApplication {
             TASK_LIST.add(this);
         }
 
+        public String getId() {
+            return "123";
+        }
+
         /**
          * 任务执行的内容
          */
@@ -77,7 +84,7 @@ public abstract class LiveRoomApplication {
             // 初始化线程池
             P6eWebSocketClientApplication.initThreadPool();
             // 创建连接器
-            CONNECTOR = P6eWebSocketClientApplication.connector();
+            WEBSOCKET_CONNECTOR = P6eWebSocketClientApplication.connector();
             // 初始化任务线程
             initScheduledExecutorService();
             // 初始化完成
