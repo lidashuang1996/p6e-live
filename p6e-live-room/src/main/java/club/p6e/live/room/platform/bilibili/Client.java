@@ -3,21 +3,24 @@ package club.p6e.live.room.platform.bilibili;
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketClient;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
+ * B站: https://live.bilibili.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * B站客户端
+ *
  * @author lidashuang
  * @version 1.0
  */
 public class Client {
 
     /**
-     * 斗鱼: https://www.douyu.com/
+     * B站: https://live.bilibili.com/
      * 开源项目地址: http://live.p6e.club/
      * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
      *
-     * 斗鱼客户端增强器
+     * B站客户端增强器
      *
      * @author lidashuang
      * @version 1.0

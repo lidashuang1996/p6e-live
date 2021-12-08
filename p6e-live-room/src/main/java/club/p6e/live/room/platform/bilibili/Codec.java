@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * 斗鱼: https://www.douyu.com/
+ * B站: https://live.bilibili.com/
  * 开源项目地址: http://live.p6e.club/
  * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
  *
- * 斗鱼编解码对象
+ * B站编解码器
  *
  * @author lidashuang
  * @version 1.0
@@ -27,8 +26,10 @@ public class Codec extends LiveRoomCodec<Message> {
     /** 注入日志对象 */
     private static final Logger LOGGER = LoggerFactory.getLogger(Codec.class);
 
+    /** 头部长度 */
     private static final int HEADER_LENGTH = 16;
-    private static final int HEADER_LENGTH_BYTE_LENGTH = 4;
+    /** 长度在头部占的长度 */
+    private static final int LENGTH_HEADER_BYTE_LENGTH = 4;
 
     /** 空的字节内容 */
     private static final int EMPTY_BYTE = 0;
@@ -123,8 +124,8 @@ public class Codec extends LiveRoomCodec<Message> {
                             // 需要拆开为一条条的数据
                             int zIndex = 0;
                             final byte[] zBytes = Utils.decompressZlib(bytes);
-                            while (zBytes.length >= zIndex + HEADER_LENGTH_BYTE_LENGTH) {
-                                final int zLen = Utils.bytesToIntBig(Utils.bytesIntercept(zBytes, zIndex, HEADER_LENGTH_BYTE_LENGTH));
+                            while (zBytes.length >= zIndex + LENGTH_HEADER_BYTE_LENGTH) {
+                                final int zLen = Utils.bytesToIntBig(Utils.bytesIntercept(zBytes, zIndex, LENGTH_HEADER_BYTE_LENGTH));
                                 final byte[] mBytes = Utils.bytesIntercept(zBytes, zIndex, zLen);
                                 zIndex += zLen;
                                 // 解压消息里面的数据
@@ -139,7 +140,8 @@ public class Codec extends LiveRoomCodec<Message> {
                                 // 内容5 部分
                                 final int mSpare = Utils.bytesToIntBig(Utils.bytesIntercept(mBytes, 12, 4));
                                 if (mLen1 > HEADER_LENGTH && mLen2 == HEADER_LENGTH) {
-                                    final Message message = this.builder.deserialization(bytes);
+                                    final Message message = new Message();
+                                    message.setData(new String(bytes));
                                     message.setType(mType);
                                     message.setSpare(mSpare);
                                     message.setLength(mLen1);

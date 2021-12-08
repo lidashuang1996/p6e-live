@@ -13,6 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
+ * B站: https://live.bilibili.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * B站处理器
+ *
  * @author lidashuang
  * @version 1.0
  */

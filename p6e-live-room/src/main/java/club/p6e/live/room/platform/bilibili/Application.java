@@ -8,10 +8,18 @@ import club.p6e.websocket.client.Config;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * B站: https://live.bilibili.com/
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * B站应用
+ *
  * @author lidashuang
  * @version 1.0
  */
@@ -57,9 +65,9 @@ public class Application extends LiveRoomApplication {
     private static String[] getUrlAndToken(String rid) {
         try {
             final String httpUrl = Utils.translate(URL, "room", rid);
-            LOGGER.debug("get url and token address ==> " + httpUrl);
+            LOGGER.info("[ BiliBili " + rid + " ] get url and token address ==> " + httpUrl);
             final String httpResult = Utils.doGet(httpUrl);
-            LOGGER.debug("get url and token result ==> " + httpResult);
+            LOGGER.info("[ BiliBili " + rid + " ] get url and token result ==> " + httpResult);
             final String p1 = "data", p2 = "host_server_list", p3 = "host", p4 = "wss_port", p5 = "token";
             final Map<String, Object> map = Utils.fromJsonToMap(httpResult, String.class, Object.class);
             if (map != null && map.get(p1) != null) {
@@ -67,11 +75,13 @@ public class Application extends LiveRoomApplication {
                 if (data != null && data.get(p2) != null && data.get(p5) != null) {
                     final List<Map<String, Object>> list = (List<Map<String, Object>>) data.get(p2);
                     if (list != null && list.size() > 0) {
-                        return new String[] {
+                        final String[] result = new String[] {
                                 "wss://" + list.get(0).get(p3) + ":"
                                         + Double.valueOf(String.valueOf(list.get(0).get(p4))).intValue()  + "/sub",
                                 String.valueOf(data.get(p5))
                         };
+                        LOGGER.info("[ BiliBili " + rid + " ] get info result ==> " + Arrays.asList(result));
+                        return result;
                     }
                 }
             }
