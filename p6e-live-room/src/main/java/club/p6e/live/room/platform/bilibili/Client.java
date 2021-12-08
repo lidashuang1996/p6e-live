@@ -2,6 +2,7 @@ package club.p6e.live.room.platform.bilibili;
 
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketClient;
+import io.netty.buffer.ByteBuf;
 
 /**
  * B站: https://live.bilibili.com/
@@ -85,7 +86,7 @@ public class Client {
         message.setSpare(1);
         message.setType(LOGIN_MESSAGE_TYPE);
         message.setAgreement(LOGIN_AGREEMENT_TYPE);
-        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
+        this.sendMessage(message);
     }
 
     /**
@@ -98,7 +99,7 @@ public class Client {
         message.setType(PANT_MESSAGE_TYPE);
         message.setLength(PANT_MESSAGE.length());
         message.setAgreement(PANT_AGREEMENT_TYPE);
-        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
+        this.sendMessage(message);
     }
 
     /**
@@ -106,6 +107,14 @@ public class Client {
      * @param message 消息对象
      */
     public void sendMessage(Message message) {
-        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
+        ByteBuf byteBuf = null;
+        try {
+            byteBuf = this.codec.encode(message);
+            this.p6eWebSocketClient.sendMessageBinary(byteBuf);
+        } finally {
+            if (byteBuf != null) {
+                byteBuf.release();
+            }
+        }
     }
 }

@@ -106,37 +106,42 @@ public class Handler implements P6eWebSocketCallback {
 
     @Override
     public void onOpen(P6eWebSocketClient client) {
-        // 创建客户端对象
-        this.clientHuYa = new Client(rid, codec, client);
-        // 增强客户端对象
-        if (this.clientHuYaIntensifier != null) {
-            this.clientHuYa = this.clientHuYaIntensifier.enhance(this.clientHuYa);
-        }
-        // 发送监听弹幕推送的消息
-        this.clientHuYa.monitorEvent();
-
-        // 心跳任务创建
-        // 心跳任务如果存在将关闭
-        if (this.task != null) {
-            final String tid = this.task.getId();
-            LOGGER.warn("[ HuYa " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
-            LOGGER.warn("[ HuYa " + this.rid + " ] now execute to close task [ " + tid + " ]...");
-            LOGGER.info("[ HuYa: " + this.rid + " ] start closing task [ " + tid + " ].");
-            this.task.close();
-            this.task = null;
-            LOGGER.info("[ HuYa: " + this.rid + " ] end closing task [ " + tid + " ].");
-            LOGGER.warn("[ HuYa " + this.rid + " ] closing successful [ " + tid + " ].");
-        }
-        new LiveRoomApplication.Task(60, 60, true) {
-            @Override
-            public void execute() {
-                // 发送监听弹幕推送的消息
-                clientHuYa.monitorEvent();
+        try {
+            // 创建客户端对象
+            this.clientHuYa = new Client(rid, codec, client);
+            // 增强客户端对象
+            if (this.clientHuYaIntensifier != null) {
+                this.clientHuYa = this.clientHuYaIntensifier.enhance(this.clientHuYa);
             }
-        };
+            // 发送监听弹幕推送的消息
+            this.clientHuYa.monitorEvent();
 
-        // 触发回调函数
-        this.callback.onOpen(this.clientHuYa);
+            // 心跳任务创建
+            // 心跳任务如果存在将关闭
+            if (this.task != null) {
+                final String tid = this.task.getId();
+                LOGGER.warn("[ HuYa " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
+                LOGGER.warn("[ HuYa " + this.rid + " ] now execute to close task [ " + tid + " ]...");
+                LOGGER.info("[ HuYa: " + this.rid + " ] start closing task [ " + tid + " ].");
+                this.task.close();
+                this.task = null;
+                LOGGER.info("[ HuYa: " + this.rid + " ] end closing task [ " + tid + " ].");
+                LOGGER.warn("[ HuYa " + this.rid + " ] closing successful [ " + tid + " ].");
+            }
+            new LiveRoomApplication.Task(60, 60, true) {
+                @Override
+                public void execute() {
+                    // 发送监听弹幕推送的消息
+                    clientHuYa.monitorEvent();
+                }
+            };
+
+            // 触发回调函数
+            this.callback.onOpen(this.clientHuYa);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ HuYa: " + this.rid + " ] onError ==> " + e.getMessage());
+        }
     }
 
     @Override

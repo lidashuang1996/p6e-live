@@ -116,41 +116,46 @@ public class Handler implements P6eWebSocketCallback {
      */
     @Override
     public void onOpen(P6eWebSocketClient client) {
-        // 创建客户端对象
-        this.clientDouYu = new Client(this.rid, this.codec, client);
-        // 增强客户端对象
-        if (this.clientDouYuIntensifier != null) {
-            this.clientDouYu = this.clientDouYuIntensifier.enhance(this.clientDouYu);
-        }
-        // 发送登录的信息
-        this.clientDouYu.sendLoginMessage();
-        // 发送加入的组的信息
-        this.clientDouYu.sendGroupMessage();
-        // 发送接收全部礼物的信息
-        this.clientDouYu.sendAllGiftMessage();
-
-        // 心跳任务创建
-        // 心跳任务如果存在将关闭
-        if (this.task != null) {
-            final String tid = this.task.getId();
-            LOGGER.warn("[ DouYu " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
-            LOGGER.warn("[ DouYu " + this.rid + " ] now execute to close task [ " + tid + " ]...");
-            LOGGER.info("[ DouYu: " + this.rid + " ] start closing task [ " + tid + " ].");
-            this.task.close();
-            this.task = null;
-            LOGGER.info("[ DouYu: " + this.rid + " ] end closing task [ " + tid + " ].");
-            LOGGER.warn("[ DouYu " + this.rid + " ] closing successful [ " + tid + " ].");
-        }
-        this.task = new LiveRoomApplication.Task(0, 45, true) {
-            @Override
-            public void execute() {
-                // 心跳
-                clientDouYu.sendPantMessage();
+        try {
+            // 创建客户端对象
+            this.clientDouYu = new Client(this.rid, this.codec, client);
+            // 增强客户端对象
+            if (this.clientDouYuIntensifier != null) {
+                this.clientDouYu = this.clientDouYuIntensifier.enhance(this.clientDouYu);
             }
-        };
+            // 发送登录的信息
+            this.clientDouYu.sendLoginMessage();
+            // 发送加入的组的信息
+            this.clientDouYu.sendGroupMessage();
+            // 发送接收全部礼物的信息
+            this.clientDouYu.sendAllGiftMessage();
 
-        // 触发回调函数
-        this.callback.onOpen(this.clientDouYu);
+            // 心跳任务创建
+            // 心跳任务如果存在将关闭
+            if (this.task != null) {
+                final String tid = this.task.getId();
+                LOGGER.warn("[ DouYu " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
+                LOGGER.warn("[ DouYu " + this.rid + " ] now execute to close task [ " + tid + " ]...");
+                LOGGER.info("[ DouYu: " + this.rid + " ] start closing task [ " + tid + " ].");
+                this.task.close();
+                this.task = null;
+                LOGGER.info("[ DouYu: " + this.rid + " ] end closing task [ " + tid + " ].");
+                LOGGER.warn("[ DouYu " + this.rid + " ] closing successful [ " + tid + " ].");
+            }
+            this.task = new LiveRoomApplication.Task(0, 45, true) {
+                @Override
+                public void execute() {
+                    // 心跳
+                    clientDouYu.sendPantMessage();
+                }
+            };
+
+            // 触发回调函数
+            this.callback.onOpen(this.clientDouYu);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYu: " + this.rid + " ] onOpen ==> " + e.getMessage());
+        }
     }
 
     @Override

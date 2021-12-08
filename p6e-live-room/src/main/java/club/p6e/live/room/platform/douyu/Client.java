@@ -2,6 +2,8 @@ package club.p6e.live.room.platform.douyu;
 
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketClient;
+import io.netty.buffer.ByteBuf;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,7 +73,7 @@ public class Client {
         message.put("roomid", rid);
         message.put("username", "69328905");
         message.put("aver", "218101901");
-        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
+        this.sendMessage(message);
     }
 
     /**
@@ -82,7 +84,7 @@ public class Client {
         message.put("rid", rid);
         message.put("gid", "1");
         message.put("type", "joingroup");
-        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
+        this.sendMessage(message);
     }
 
     /**
@@ -110,7 +112,7 @@ public class Client {
         dfl5.put("ss", 0);
         dfl5.put("sn", 901);
         message.put("dfl", new Object[] { dfl1, dfl2, dfl3, dfl4, dfl5, dfl6 });
-        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
+        this.sendMessage(message);
     }
 
     /**
@@ -119,13 +121,21 @@ public class Client {
     public void sendPantMessage() {
         final Message message = new Message();
         message.put("type", "mrkl");
-        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
+        this.sendMessage(message);
     }
 
     /**
      * 发送消息
      */
     public void sendMessage(Message message) {
-        this.p6eWebSocketClient.sendMessageBinary(codec.encode(message));
+        ByteBuf byteBuf = null;
+        try {
+            byteBuf = this.codec.encode(message);
+            this.p6eWebSocketClient.sendMessageBinary(byteBuf);
+        } finally {
+            if (byteBuf != null) {
+                byteBuf.release();
+            }
+        }
     }
 }

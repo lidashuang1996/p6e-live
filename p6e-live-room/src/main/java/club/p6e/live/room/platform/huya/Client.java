@@ -2,6 +2,7 @@ package club.p6e.live.room.platform.huya;
 
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketClient;
+import io.netty.buffer.ByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,21 @@ public class Client {
         this.p6eWebSocketClient = p6eWebSocketClient;
     }
 
+    /**
+     * 发送消息
+     */
+    public void sendMessage(Message message) {
+        ByteBuf byteBuf = null;
+        try {
+            byteBuf = this.codec.encode(message);
+            this.p6eWebSocketClient.sendMessageBinary(byteBuf);
+        } finally {
+            if (byteBuf != null) {
+                byteBuf.release();
+            }
+        }
+    }
+
     public void monitorEvent() {
         // 6501 礼物
         // 1400 弹幕
@@ -57,7 +73,7 @@ public class Client {
         template.setData(new BarrageEventTemplate(this.rid, this.rid));
         final Message message = new Message();
         message.setData(template.toList());
-        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
+        this.sendMessage(message);
     }
 
     public static class Template<T> {
