@@ -2,6 +2,7 @@ package club.p6e.live.room.platform.bilibili;
 
 import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
+import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.live.room.utils.Utils;
 import club.p6e.websocket.client.Config;
 import io.netty.channel.Channel;
@@ -21,6 +22,9 @@ public class Application extends LiveRoomApplication {
     /** 注入日志对象 */
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
+    /** 编解码器 */
+    private static LiveRoomCodec<Message> CODEC = new Codec(new MessageBuilder());
+
     /** URL */
     private final String url;
     /** 处理器对象 */
@@ -30,6 +34,21 @@ public class Application extends LiveRoomApplication {
     private Channel channel;
 
     /**
+     * 读取编解码器
+     * @return 编解码器
+     */
+    public static LiveRoomCodec<Message> getCodec() {
+        return CODEC;
+    }
+
+    /**
+     * 写入编解码器
+     */
+    public static void setCodec(LiveRoomCodec<Message> codec) {
+        CODEC = codec;
+    }
+
+    /**
      * 通过房间编号获取 url 地址
      * @param rid 房间编号
      * @return url 地址
@@ -37,7 +56,7 @@ public class Application extends LiveRoomApplication {
     @SuppressWarnings("all")
     private static String[] getUrlAndToken(String rid) {
         try {
-            final String httpUrl = Utils.translate(WEB_SOCKET_URL, "room", rid);
+            final String httpUrl = Utils.translate(URL, "room", rid);
             LOGGER.debug("get url and token address ==> " + httpUrl);
             final String httpResult = Utils.doGet(httpUrl);
             LOGGER.debug("get url and token result ==> " + httpResult);
@@ -56,7 +75,7 @@ public class Application extends LiveRoomApplication {
                     }
                 }
             }
-            throw new RuntimeException("get url and token data error.");
+            throw new RuntimeException("[ BiliBili " + rid + " ] get url and token data error.");
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -73,9 +92,9 @@ public class Application extends LiveRoomApplication {
         final String[] data = getUrlAndToken(rid);
         if (data != null && data.length >= len) {
             this.url = data[0];
-            this.handler = new Handler(rid, data[1], new Decoder(), new Encoder(), callback, true);
+            this.handler = new Handler(rid, data[1], true, getCodec(), callback);
         } else {
-            throw new RuntimeException("create application error.");
+            throw new RuntimeException("[ BiliBili " + rid + " ] create application error.");
         }
     }
 
@@ -90,9 +109,9 @@ public class Application extends LiveRoomApplication {
         final String[] data = getUrlAndToken(rid);
         if (data != null && data.length >= len) {
             this.url = data[0];
-            this.handler = new Handler(rid, data[1], new Decoder(), new Encoder(), callback, isAsync);
+            this.handler = new Handler(rid, data[1], isAsync, getCodec(), callback);
         } else {
-            throw new RuntimeException("create application error.");
+            throw new RuntimeException("[ BiliBili " + rid + " ] create application error.");
         }
     }
 
@@ -106,12 +125,20 @@ public class Application extends LiveRoomApplication {
         this.handler = handler;
     }
 
+    /**
+     * 获取连接的地址
+     * @return 连接的地址
+     */
     public String getUrl() {
         return url;
     }
 
+    /**
+     * 获取处理器对象
+     * @return 处理器对象
+     */
     public String getRid() {
-        return "";
+        return handler.getRid();
     }
 
     @Override

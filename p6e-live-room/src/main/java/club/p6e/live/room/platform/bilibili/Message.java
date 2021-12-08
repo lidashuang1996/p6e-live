@@ -1,5 +1,6 @@
 package club.p6e.live.room.platform.bilibili;
 
+import club.p6e.live.room.LiveRoomMessage;
 import club.p6e.live.room.utils.Utils;
 
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,7 @@ import java.util.HashMap;
  * @author lidashuang
  * @version 1.0
  */
-public class Message extends HashMap<String, Object> {
+public class Message extends LiveRoomMessage {
     public Message setType(int type) {
         this.put(TYPE, type);
         return this;

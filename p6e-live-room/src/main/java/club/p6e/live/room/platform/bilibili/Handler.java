@@ -2,7 +2,7 @@ package club.p6e.live.room.platform.bilibili;
 
 import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
-import club.p6e.live.room.platform.douyu.Client;
+import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketCallback;
 import club.p6e.websocket.client.P6eWebSocketClient;
 import io.netty.buffer.ByteBuf;
@@ -27,19 +27,17 @@ public class Handler implements P6eWebSocketCallback {
     private final String token;
     /** 是否异步 */
     private final boolean isAsync;
+    /** 编码器 */
+    private final LiveRoomCodec<Message> codec;
     /** 回调执行函数 */
     private final LiveRoomCallback.BiLiBiLi callback;
+
+    /** 客户端 */
+    private Client clientBiLiBiLi;
     /** 客户端增强器 */
-    private Client.Intensifier clientDouYuIntensifier;
+    private Client.Intensifier clientBiLiBiLiIntensifier;
     /** 任务器 */
     private LiveRoomApplication.Task task;
-
-    /**
-     * 斗鱼客户端
-     */
-    private Client client;
-    /** 客户端增强器 */
-    private Client.Intensifier clientDouYuIntensifier;
 
     /**
      * 构造方法初始化
@@ -48,68 +46,53 @@ public class Handler implements P6eWebSocketCallback {
      * @param callback 回调函数
      */
     public Handler(String rid, String token, LiveRoomCallback.BiLiBiLi callback) {
-        this(rid, token, new Decoder(), new Encoder(), callback, true);
+        this(rid, token, true, Application.getCodec(), callback);
     }
 
     /**
      * 构造方法初始化
      * @param rid 房间 ID
      * @param token 认证的令牌
-     * @param callback 回调函数
      * @param isAsync 是否异步执行
-     */
-    public Handler(String rid, String token, LiveRoomCallback.BiLiBiLi callback, boolean isAsync) {
-        this(rid, token, new Decoder(), new Encoder(), callback, isAsync);
-    }
-
-    /**
-     * 构造方法初始化
-     * @param rid 房间 ID
-     * @param token 认证的令牌
-     * @param decoder 解码器
      * @param callback 回调函数
      */
-    public Handler(String rid, String token, Decoder decoder, LiveRoomCallback.BiLiBiLi callback) {
-        this(rid, token, decoder, new Encoder(), callback, true);
+    public Handler(String rid, String token, boolean isAsync, LiveRoomCallback.BiLiBiLi callback) {
+        this(rid, token, isAsync, Application.getCodec(), callback);
     }
 
     /**
      * 构造方法初始化
      * @param rid 房间 ID
      * @param token 认证的令牌
-     * @param encoder 编码器
-     */
-    public Handler(String rid, String token, Encoder encoder, LiveRoomCallback.BiLiBiLi callback) {
-        this(rid, token, new Decoder(), encoder, callback, true);
-    }
-
-    /**
-     * 构造方法初始化
-     * @param rid 房间 ID
-     * @param token 认证的令牌
-     * @param decoder 解码器
-     * @param encoder 编码器
+     * @param codec 编解码器
      * @param callback 回调函数
      */
-    public Handler(String rid, String token, Decoder decoder, Encoder encoder, LiveRoomCallback.BiLiBiLi callback) {
-        this(rid, token, decoder, encoder, callback, true);
+    public Handler(String rid, String token, LiveRoomCodec<Message> codec, LiveRoomCallback.BiLiBiLi callback) {
+        this(rid, token, true, codec, callback);
     }
 
     /**
      * 构造方法初始化
      * @param rid 房间 ID
      * @param token 认证的令牌
-     * @param decoder 解码器
-     * @param encoder 编码器
      * @param isAsync 是否异步执行
+     * @param codec 编解码器
+     * @param callback 回调函数
      */
-    public Handler(String rid, String token, Decoder decoder, Encoder encoder, LiveRoomCallback.BiLiBiLi callback, boolean isAsync) {
+    public Handler(String rid, String token, boolean isAsync, LiveRoomCodec<Message> codec, LiveRoomCallback.BiLiBiLi callback) {
         this.rid = rid;
         this.token = token;
-        this.decoder = decoder;
-        this.encoder = encoder;
         this.isAsync = isAsync;
+        this.codec = codec;
         this.callback = callback;
+    }
+
+    /**
+     * 获取 RID
+     * @return RID
+     */
+    public String getRid() {
+        return rid;
     }
 
     /**
@@ -120,54 +103,65 @@ public class Handler implements P6eWebSocketCallback {
         return isAsync;
     }
 
-    public String getRid() {
-        return rid;
-    }
-
     /**
      * 设置客户端增强器
      * @param intensifier 增强器对象
      */
     public void setClientIntensifier(Client.Intensifier intensifier) {
-        this.clientDouYuIntensifier = intensifier;
+        this.clientBiLiBiLiIntensifier = intensifier;
     }
 
     @Override
-    public void onOpen(P6eWebSocketClient wc) {
+    public void onOpen(P6eWebSocketClient client) {
         // 创建客户端对象
-        this.client = new Client(wc, this.encoder);
+        this.clientBiLiBiLi = new Client(this.rid, this.token, this.codec, client);
+        // 增强客户端对象
+        if (this.clientBiLiBiLiIntensifier != null) {
+            this.clientBiLiBiLi = this.clientBiLiBiLiIntensifier.enhance(this.clientBiLiBiLi);
+        }
         // 发送登录消息
-        this.client.sendLoginMessage(this.rid, this.token);
+        this.clientBiLiBiLi.sendLoginMessage();
 
         // 心跳任务创建
-        new LiveRoomApplication.Task(30, 30, true) {
+        // 心跳任务如果存在将关闭
+        if (this.task != null) {
+            final String tid = this.task.getId();
+            LOGGER.warn("[ BiliBili " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
+            LOGGER.warn("[ BiliBili " + this.rid + " ] now execute to close task [ " + tid + " ]...");
+            LOGGER.info("[ BiliBili: " + this.rid + " ] start closing task [ " + tid + " ].");
+            this.task.close();
+            this.task = null;
+            LOGGER.info("[ BiliBili: " + this.rid + " ] end closing task [ " + tid + " ].");
+            LOGGER.warn("[ BiliBili " + this.rid + " ] closing successful [ " + tid + " ].");
+        }
+        this.task = new LiveRoomApplication.Task(0, 30, true) {
             @Override
             public void execute() {
                 // 心跳
-                client.sendPantMessage();
+                clientBiLiBiLi.sendPantMessage();
             }
         };
 
         // 触发回调函数
-        this.callback.onOpen(this.client);
+        this.callback.onOpen(this.clientBiLiBiLi);
     }
 
     @Override
     public void onClose(P6eWebSocketClient client) {
         try {
-            this.callback.onClose(this.clientDouYu);
+            this.callback.onClose(this.clientBiLiBiLi);
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ DouYu: " + this.rid + " ] onClose ==> " + e.getMessage());
+            LOGGER.error("[ BiliBili: " + this.rid + " ] onClose ==> " + e.getMessage());
         } finally {
             if (this.task == null) {
-                LOGGER.info("[ DouYu: " + this.rid + " ] no started task.");
+                LOGGER.info("[ BiliBili: " + this.rid + " ] no started task.");
             } else {
                 final String tid = this.task.getId();
-                LOGGER.info("[ DouYu: " + this.rid + " ] start closing task [ " + tid + " ].");
+                LOGGER.info("[ BiliBili: " + this.rid + " ] start closing task [ " + tid + " ].");
                 this.task.close();
                 this.task = null;
-                LOGGER.info("[ DouYu: " + this.rid + " ] end closing task [ " + tid + " ].");
+                LOGGER.info("[ BiliBili: " + this.rid + " ] end closing task [ " + tid + " ].");
             }
         }
     }
@@ -175,7 +169,7 @@ public class Handler implements P6eWebSocketCallback {
     @Override
     public void onError(P6eWebSocketClient client, Throwable throwable) {
         try {
-            this.callback.onError(this.client, throwable);
+            this.callback.onError(this.clientBiLiBiLi, throwable);
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ BiliBili: " + this.rid + " ] onError ==> " + e.getMessage());
@@ -187,7 +181,7 @@ public class Handler implements P6eWebSocketCallback {
         try {
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ BILI: " + this.rid + " ] onMessageText ==> "
+            LOGGER.error("[ BiliBili: " + this.rid + " ] onMessageText ==> "
                     + new String(bytes, StandardCharsets.UTF_8)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
@@ -203,7 +197,7 @@ public class Handler implements P6eWebSocketCallback {
         try {
             // 解码得到消息对象
             // 回调收到消息方法
-            this.callback.onMessage(this.client, decoder.decode(byteBuf));
+            this.callback.onMessage(this.clientBiLiBiLi, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ BiliBili: " + this.rid + " ] onMessagePong ==> " + e.getMessage());

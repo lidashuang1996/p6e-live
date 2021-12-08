@@ -1,5 +1,8 @@
 package club.p6e.live.room.platform.bilibili;
 
+import club.p6e.live.room.LiveRoomCodec;
+import club.p6e.websocket.client.P6eWebSocketClient;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,8 +49,9 @@ public class Client {
      * 构造器初始化
      * @param client 客户端
      * @param encoder 编码器
+     * @param s
      */
-    public Client(club.p6e.websocket.client.Client client, Encoder encoder) {
+    public Client(String s, String rid, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
         this.client = client;
         this.encoder = encoder;
     }
@@ -57,7 +61,7 @@ public class Client {
      * @param rid 房间的编号
      * @param token 房间的令牌
      */
-    public void sendLoginMessage(String rid, String token) {
+    public void sendLoginMessage() {
         final Map<String, Object> data = new HashMap<>(6);
         data.put("uid", 0);
         data.put("type", 2);
