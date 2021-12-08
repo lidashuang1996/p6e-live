@@ -32,16 +32,16 @@ public interface LiveRoomCallback {
         public void onError(club.p6e.live.room.platform.bilibili.Client client ,Throwable throwable);
         public void onMessage(club.p6e.live.room.platform.bilibili.Client client, List<club.p6e.live.room.platform.bilibili.Message> messages);
     }
-//
-//    /**
-//     * BliBli直播的消息回调
-//     */
-//    public interface HuYa {
-//        public void onOpen(club.p6e.live.room.platform.huya.Client client );
-//        public void onClose(club.p6e.live.room.platform.huya.Client client );
-//        public void onError(club.p6e.live.room.platform.huya.Client client ,Throwable throwable);
-//        public void onMessage(club.p6e.live.room.platform.huya.Client client, List<club.p6e.live.room.platform.huya.Message> messages);
-//    }
+
+    /**
+     * BliBli直播的消息回调
+     */
+    public interface HuYa {
+        public void onOpen(club.p6e.live.room.platform.huya.Client client );
+        public void onClose(club.p6e.live.room.platform.huya.Client client );
+        public void onError(club.p6e.live.room.platform.huya.Client client ,Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.huya.Client client, List<club.p6e.live.room.platform.huya.Message> messages);
+    }
 //
 //
 //    /**

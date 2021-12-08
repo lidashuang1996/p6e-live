@@ -152,10 +152,8 @@ public class Codec extends LiveRoomCodec<Message> {
                                     message.setAgreement(mAgreement);
                                     result.add(message);
                                 } else {
-                                    LOGGER.error("[ BiliBili ] " +
-                                            "unread length is less than content length, entire message is discarded !!");
-                                    throw new IOException("[ BiliBili ] " +
-                                            "unread length is less than content length, entire message is discarded !!");
+                                    LOGGER.error("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");
+                                    throw new IOException("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");
                                 }
                             }
                         } else {
@@ -175,16 +173,12 @@ public class Codec extends LiveRoomCodec<Message> {
                             result.add(message);
                         }
                     } else {
-                        LOGGER.error("[ BiliBili ] " +
-                                "unread length is less than content length, entire message is discarded !!");
-                        throw new IOException("[ BiliBili ] " +
-                                "unread length is less than content length, entire message is discarded !!");
+                        LOGGER.error("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");
+                        throw new IOException("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");
                     }
                 } else {
-                    LOGGER.error("[ BiliBili ] unread data content length is " +
-                            "less than the header bytecode content length, entire message is discarded !!");
-                    throw new IOException("[ BiliBili ] unread data content length is " +
-                            "less than the header bytecode content length, entire message is discarded !!");
+                    LOGGER.error("[ BiliBili ] unread data content length is " + "less than the header bytecode content length, entire message is discarded !!");
+                    throw new IOException("[ BiliBili ] unread data content length is " + "less than the header bytecode content length, entire message is discarded !!");
                 }
             }
         } catch (Exception e) {
@@ -193,9 +187,6 @@ public class Codec extends LiveRoomCodec<Message> {
         }
         return result;
     }
-
-
-
 
     /**
      * 编码操作
@@ -226,7 +217,7 @@ public class Codec extends LiveRoomCodec<Message> {
      * @param message 消息对象
      * @return ByteBuf 对象
      */
-    public ByteBuf encodeMessageToByteBuf(Message message) {
+    private ByteBuf encodeMessageToByteBuf(Message message) {
         try {
             final byte[] bytes = this.builder.serialization(message);
             final int length = HEADER_LENGTH + bytes.length;

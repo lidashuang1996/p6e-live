@@ -20,7 +20,7 @@ public abstract class LiveRoomCodec<T extends LiveRoomMessage> {
      * @param in
      * @return
      */
-    public abstract List<T> decode(ByteBuf in);
+    public abstract List<T> decode(ByteBuf byteBuf);
 
     /**
      * 编码

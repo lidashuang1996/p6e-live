@@ -139,7 +139,7 @@ public class Codec extends LiveRoomCodec<Message> {
      * @param message 消息对象
      * @return ByteBuf 对象
      */
-    public ByteBuf encodeMessageToByteBuf(Message message) {
+    private ByteBuf encodeMessageToByteBuf(Message message) {
         try {
             // 序列化消息
             final byte[] contents = this.builder.serialization(message);
