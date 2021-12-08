@@ -33,9 +33,9 @@ public class Handler implements P6eWebSocketCallback {
     private final LiveRoomCallback.BiLiBiLi callback;
 
     /** 客户端 */
-    private Client clientBiLiBiLi;
+    private Client clientBiliBili;
     /** 客户端增强器 */
-    private Client.Intensifier clientBiLiBiLiIntensifier;
+    private Client.Intensifier clientBiliBiliIntensifier;
     /** 任务器 */
     private LiveRoomApplication.Task task;
 
@@ -108,19 +108,19 @@ public class Handler implements P6eWebSocketCallback {
      * @param intensifier 增强器对象
      */
     public void setClientIntensifier(Client.Intensifier intensifier) {
-        this.clientBiLiBiLiIntensifier = intensifier;
+        this.clientBiliBiliIntensifier = intensifier;
     }
 
     @Override
     public void onOpen(P6eWebSocketClient client) {
         // 创建客户端对象
-        this.clientBiLiBiLi = new Client(this.rid, this.token, this.codec, client);
+        this.clientBiliBili = new Client(this.rid, this.token, this.codec, client);
         // 增强客户端对象
-        if (this.clientBiLiBiLiIntensifier != null) {
-            this.clientBiLiBiLi = this.clientBiLiBiLiIntensifier.enhance(this.clientBiLiBiLi);
+        if (this.clientBiliBiliIntensifier != null) {
+            this.clientBiliBili = this.clientBiliBiliIntensifier.enhance(this.clientBiliBili);
         }
         // 发送登录消息
-        this.clientBiLiBiLi.sendLoginMessage();
+        this.clientBiliBili.sendLoginMessage();
 
         // 心跳任务创建
         // 心跳任务如果存在将关闭
@@ -138,18 +138,18 @@ public class Handler implements P6eWebSocketCallback {
             @Override
             public void execute() {
                 // 心跳
-                clientBiLiBiLi.sendPantMessage();
+                clientBiliBili.sendPantMessage();
             }
         };
 
         // 触发回调函数
-        this.callback.onOpen(this.clientBiLiBiLi);
+        this.callback.onOpen(this.clientBiliBili);
     }
 
     @Override
     public void onClose(P6eWebSocketClient client) {
         try {
-            this.callback.onClose(this.clientBiLiBiLi);
+            this.callback.onClose(this.clientBiliBili);
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ BiliBili: " + this.rid + " ] onClose ==> " + e.getMessage());
@@ -169,7 +169,7 @@ public class Handler implements P6eWebSocketCallback {
     @Override
     public void onError(P6eWebSocketClient client, Throwable throwable) {
         try {
-            this.callback.onError(this.clientBiLiBiLi, throwable);
+            this.callback.onError(this.clientBiliBili, throwable);
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ BiliBili: " + this.rid + " ] onError ==> " + e.getMessage());
@@ -197,7 +197,7 @@ public class Handler implements P6eWebSocketCallback {
         try {
             // 解码得到消息对象
             // 回调收到消息方法
-            this.callback.onMessage(this.clientBiLiBiLi, this.codec.decode(byteBuf));
+            this.callback.onMessage(this.clientBiliBili, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ BiliBili: " + this.rid + " ] onMessagePong ==> " + e.getMessage());

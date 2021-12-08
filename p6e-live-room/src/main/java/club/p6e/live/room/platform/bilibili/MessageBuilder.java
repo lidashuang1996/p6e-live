@@ -24,6 +24,9 @@ public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
         if (message == null) {
             return new byte[0];
         } else {
+            if (message.data() != null && message.data() instanceof String) {
+                return ((String) message.data()).getBytes(StandardCharsets.UTF_8);
+            }
             final Map<String, Object> map = new HashMap<>(message.size());
             for (final String key : message.keySet()) {
                 if (!key.startsWith(SYMBOL_$)) {
@@ -39,7 +42,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
      * @param data 内容
      * @return 反序列化的内容
      */
-    private static Object deserializationStringToMessage(String data) {
+    public static Object deserializationStringToMessage(String data) {
         return Utils.fromJson(data, Object.class);
     }
 

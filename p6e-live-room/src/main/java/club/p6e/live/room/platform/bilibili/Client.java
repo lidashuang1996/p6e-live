@@ -34,47 +34,75 @@ public class Client {
     /** 房间心跳的消息内容 */
     private static final String PANT_MESSAGE = "[object Object]";
     /** 房间心跳的消息类型 */
-    private static final int PANT_TYPE_MESSAGE = 2;
+    private static final int PANT_MESSAGE_TYPE = 2;
+    /** 房间心跳的协议类型 */
+    private static final int PANT_AGREEMENT_TYPE = 1;
     /** 房间登录的消息类型 */
-    private static final int LOGIN_TYPE_MESSAGE = 7;
+    private static final int LOGIN_MESSAGE_TYPE = 7;
+    private static final int LOGIN_AGREEMENT_TYPE = 0;
     /** 房间登录成功返回的消息类型 */
     private static final int LOGIN_RESULT_TYPE_MESSAGE = 8;
 
+    /** RID */
+    private final String rid;
+    /** TOKEN */
+    private final String token;
     /** 编码器 */
-    private final Encoder encoder;
+    private final LiveRoomCodec<Message> codec;
     /** 客户端 */
-    private final club.p6e.websocket.client.Client client;
+    private final P6eWebSocketClient p6eWebSocketClient;
 
     /**
      * 构造器初始化
-     * @param client 客户端
-     * @param encoder 编码器
-     * @param s
+     * @param rid 房间编号
+     * @param token 令牌
+     * @param codec 编码器
+     * @param p6eWebSocketClient 客户端对象
      */
-    public Client(String s, String rid, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
-        this.client = client;
-        this.encoder = encoder;
+    public Client(String rid, String token, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
+        this.rid = rid;
+        this.token = token;
+        this.codec = codec;
+        this.p6eWebSocketClient = p6eWebSocketClient;
     }
 
     /**
-     * 发送加入房间的信息
-     * @param rid 房间的编号
-     * @param token 房间的令牌
+     * 发送登录消息
      */
     public void sendLoginMessage() {
-        final Map<String, Object> data = new HashMap<>(6);
-        data.put("uid", 0);
-        data.put("type", 2);
-        data.put("key", token);
+        final Message message = new Message();
+        message.put("uid", 0);
+        message.put("type", 2);
+        message.put("key", token);
         // protover 采用是 2
         // protover 最新的版本是 3
-        data.put("protover", 2);
-        data.put("platform", "web");
-        data.put("roomid", Integer.valueOf(rid));
-        this.client.sendMessageBinary(encoder.encode(Message.create(data, LOGIN_TYPE_MESSAGE)));
+        message.put("protover", 2);
+        message.put("platform", "web");
+        message.put("roomid", Integer.valueOf(rid));
+        message.setSpare(1);
+        message.setType(LOGIN_MESSAGE_TYPE);
+        message.setAgreement(LOGIN_AGREEMENT_TYPE);
+        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
     }
 
+    /**
+     * 发送心跳消息
+     */
     public void sendPantMessage() {
-        this.client.sendMessageBinary(encoder.encode(Message.create(PANT_MESSAGE, PANT_TYPE_MESSAGE)));
+        final Message message = new Message();
+        message.setSpare(1);
+        message.setData(PANT_MESSAGE);
+        message.setType(PANT_MESSAGE_TYPE);
+        message.setLength(PANT_MESSAGE.length());
+        message.setAgreement(PANT_AGREEMENT_TYPE);
+        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
+    }
+
+    /**
+     * 发送消息
+     * @param message 消息对象
+     */
+    public void sendMessage(Message message) {
+        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
     }
 }
