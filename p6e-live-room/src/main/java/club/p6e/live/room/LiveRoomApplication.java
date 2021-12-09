@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
+ * 消息应用
+ *
  * @author lidashuang
  * @version 1.0
  */
@@ -74,8 +79,6 @@ public abstract class LiveRoomApplication {
         }
     }
 
-
-
     /**
      * 初始化操作
      */
@@ -141,8 +144,14 @@ public abstract class LiveRoomApplication {
         });
     }
 
+    /**
+     * 连接服务
+     */
     public abstract void connect();
 
+    /**
+     * 关闭服务
+     */
     public abstract void shutdown();
 
 }

@@ -1,11 +1,13 @@
 package club.p6e.live.room;
 
 /**
+ * 开源项目地址: http://live.p6e.club/
+ * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
+ *
  * @author lidashuang
  * @version 1.0
  */
 public class P6eLiveRoomApplication {
-
 
     public static void init() {
         LiveRoomApplication.init();
