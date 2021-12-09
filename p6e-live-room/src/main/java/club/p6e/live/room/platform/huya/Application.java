@@ -25,8 +25,7 @@ public class Application extends LiveRoomApplication {
     /** 默认的 WebSocket URL 地址 */
     private static final String DEFAULT_WEB_SOCKET_URL = "wss://cdnws.api.huya.com/";
 
-    /** 编解码器 */
-    private static LiveRoomCodec<Message> CODEC = new Codec(new MessageBuilder());
+    private static LiveRoomCodec<Message> CODEC = null;
 
     /** URL */
     private final String url;
@@ -41,7 +40,13 @@ public class Application extends LiveRoomApplication {
      * @return 编解码器
      */
     public static LiveRoomCodec<Message> getCodec() {
-        return CODEC;
+        // 因为消息构建解构对象同时只能解构一条消息
+        // 所以针对不同的应用还是每个创建一个对象使用比较好点
+        if (CODEC == null) {
+            return new Codec(new MessageBuilder());
+        } else {
+            return CODEC;
+        }
     }
 
     /**
