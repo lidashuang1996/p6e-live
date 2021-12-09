@@ -32,6 +32,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
         ByteBuf byteBuf = null;
         try {
             byteBuf = Unpooled.buffer(bytes.length);
+            byteBuf.writeBytes(bytes);
             final Map<Integer, Object> map = TAF_DECODE.execute(byteBuf);
             final Message message = new Message();
             message.setData(map);

@@ -76,6 +76,9 @@ public class Client {
         }
     }
 
+    /**
+     *
+     */
     public void monitorEvent() {
         // 6501 礼物
         // 1400 弹幕
@@ -85,6 +88,10 @@ public class Client {
         final Message message = new Message();
         message.setData(template.toList());
         this.sendMessage(message);
+    }
+
+    public P6eWebSocketClient getP6eWebSocketClient() {
+        return p6eWebSocketClient;
     }
 
     public static class Template<T> {

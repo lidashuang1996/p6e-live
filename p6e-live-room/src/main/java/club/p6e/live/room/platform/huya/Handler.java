@@ -201,7 +201,7 @@ public class Handler implements P6eWebSocketCallback {
         try {
             // 解码得到消息对象
             // 回调收到消息方法
-            System.out.println(byteBuf);
+            LOGGER.info("收到的消息内容 ：  " +  byteBuf.readableBytes());
             this.callback.onMessage(this.clientHuYa, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();
