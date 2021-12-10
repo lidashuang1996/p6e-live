@@ -152,6 +152,8 @@ public class Handler implements P6eWebSocketCallback {
 
             // 触发回调函数
             this.callback.onOpen(this.clientDouYu);
+
+            System.out.println("XXXXXXX");
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ DouYu: " + this.rid + " ] onOpen ==> " + e.getMessage());
@@ -209,6 +211,7 @@ public class Handler implements P6eWebSocketCallback {
         try {
             // 解码得到消息对象
             // 回调收到消息方法
+            System.out.println("--> " +   byteBuf.readableBytes());
             this.callback.onMessage(this.clientDouYu, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();

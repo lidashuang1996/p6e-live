@@ -61,19 +61,7 @@ public class Client {
      * 发送消息
      */
     public void sendMessage(Message message) {
-        ByteBuf byteBuf = null;
-        try {
-            byteBuf = this.codec.encode(message);
-            final byte[] bs = new byte[byteBuf.readableBytes()];
-            byteBuf.readBytes(bs);
-            System.out.println(Utils.bytesToHex(bs));
-            byteBuf.resetReaderIndex();
-            this.p6eWebSocketClient.sendMessageBinary(byteBuf);
-        } finally {
-            if (byteBuf != null) {
-                byteBuf.release();
-            }
-        }
+        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
     }
 
     /**

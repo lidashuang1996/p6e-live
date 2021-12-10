@@ -107,14 +107,6 @@ public class Client {
      * @param message 消息对象
      */
     public void sendMessage(Message message) {
-        ByteBuf byteBuf = null;
-        try {
-            byteBuf = this.codec.encode(message);
-            this.p6eWebSocketClient.sendMessageBinary(byteBuf);
-        } finally {
-            if (byteBuf != null) {
-                byteBuf.release();
-            }
-        }
+        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
     }
 }

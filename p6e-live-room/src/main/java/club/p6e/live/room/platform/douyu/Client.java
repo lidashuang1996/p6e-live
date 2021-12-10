@@ -2,7 +2,6 @@ package club.p6e.live.room.platform.douyu;
 
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketClient;
-import io.netty.buffer.ByteBuf;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -128,14 +127,6 @@ public class Client {
      * 发送消息
      */
     public void sendMessage(Message message) {
-        ByteBuf byteBuf = null;
-        try {
-            byteBuf = this.codec.encode(message);
-            this.p6eWebSocketClient.sendMessageBinary(byteBuf);
-        } finally {
-            if (byteBuf != null) {
-                byteBuf.release();
-            }
-        }
+        this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
     }
 }

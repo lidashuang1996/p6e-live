@@ -1,8 +1,8 @@
 package club.p6e.live.room;
 
-import club.p6e.live.room.platform.huya.Application;
+import club.p6e.live.room.platform.douyu.Application;
+import club.p6e.live.room.platform.douyu.Message;
 import club.p6e.live.room.platform.huya.Client;
-import club.p6e.live.room.platform.huya.Message;
 import club.p6e.live.room.platform.huya.MessageBuilder;
 import club.p6e.live.room.utils.Utils;
 import io.netty.buffer.Unpooled;
@@ -84,9 +84,34 @@ public class P6eFileApplication {
                         "00000039: 6332 3830 3738 6232 6266 6164 3938 3965  c28078b2bfad989e\n" +
                         "0000003a: 6666 3764 3761                           ff7d7a\n");
 
-        System.out.println(
-                new MessageBuilder().deserialization(bs)
-        );
+//        System.out.println(
+//                new MessageBuilder().deserialization(bs)
+//        );
+
+
+        new Application("99999", new LiveRoomCallback.DouYu() {
+            @Override
+            public void onOpen(club.p6e.live.room.platform.douyu.Client client) {
+
+            }
+
+            @Override
+            public void onClose(club.p6e.live.room.platform.douyu.Client client) {
+
+            }
+
+            @Override
+            public void onError(club.p6e.live.room.platform.douyu.Client client, Throwable throwable) {
+
+            }
+
+            @Override
+            public void onMessage(club.p6e.live.room.platform.douyu.Client client, List<Message> messages) {
+                for (Message message : messages) {
+                    System.out.println(message.data());
+                }
+            }
+        }).connect();
 
 
 
