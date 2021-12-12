@@ -66,13 +66,13 @@ public interface LiveRoomCallback {
 //    }
 //
 //
-//    /**
-//     * DouYin
-//     */
-//    public interface DouYin {
-//        public void onOpen( );
-//        public void onClose( );
-//        public void onError(Throwable throwable);
-//        public void onMessage(club.p6e.live.room.platform.douyin.Message message);
-//    }
+    /**
+     * DouYin
+     */
+    public interface DouYin {
+        public void onOpen();
+        public void onClose();
+        public void onError(Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.douyin.Message message);
+    }
 }

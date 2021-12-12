@@ -1,23 +1,47 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-cmn-Hans">
 <head>
 	<title>抖音签名程序</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<!-- 导入抖音签名JS文件 -->
+	<!-- 为什么不找出签名的代码进行模拟? -->
+	<!-- 1. JS 做了混淆 -->
+	<!-- 2. 太多了懒得看 -->
+	<!-- 为什么不 Java 执行 JS 文件? -->
+	<!-- 1. JS 代码里面包含了浏览器内置的对象， Java 执行的 JS 文件不支持流器内置对象 -->
+	<!-- ** 如果您感兴趣可以找出来，我们共同学习进入 ** -->
+	<!-- ** 如果您感兴趣可以找出来，我们共同学习进入 ** -->
+	<!-- ** 如果您感兴趣可以找出来，我们共同学习进入 ** -->
+	<!-- ** 当然你也可以学习如果对 JS 进行混淆来提升对 JS 理解 ** -->
 	<script type="text/javascript" src="./acrawler.js"></script>
 	<script type="text/javascript" src="./qm.js"></script>
+	<style>
+		main {
+				width: 520px;
+				margin: 0 auto;
+		}
+		p {
+				text-align: center;
+				font-size: 60px;
+		}
+	</style>
 </head>
 <body>
-	<h1>抖音签名程序</h1>
-	<h2 id="date"></h2>
-	<h3>不要关闭这个页面，请核对时间是否为北京时间</h3>
-	<h3>当前状态: <span id="status">未连接</span></h3>
+	<main>
+		<h1>抖音签名程序</h1>
+		<h2 id="date"></h2>
+		<h3>不要关闭这个页面，请核对时间是否为北京时间</h3>
+		<h3>当前状态: <span id="status">未连接</span></h3>
+		<h3>签名数：</h3>
+		<p id="count">0</p>
+	</main>
 </body>
 <script type="text/javascript">
-		// 当前时间
-    dateTime();
-		setInterval(() => dateTime(), 1000);
-		function dateTime() {
-		    const date = new Date();
+    // 读取显示浏览器的时间
+    dateTimeView();
+    setInterval(() => dateTimeView(), 1000);
+    function dateTimeView() {
+        const date = new Date();
         const y = date.getFullYear();
         const m1 = date.getMonth() + 1;
         const d = date.getDate();
@@ -26,8 +50,47 @@
         const s = date.getSeconds();
         document.getElementById('date').innerText = y + '/' + m1 + '/' + d + ' ' + h + ':' + m2 + ':' + s;
     }
-
-    // websocket
+</script>
+<script type="text/javascript">
+		let COUNT_NUM = 0;
+		/**
+		 * 抖音采用的对 XMLHttpRequest 进行修改从而进行加密的
+		 * 也就是说抖音重写了 XMLHttpRequest 对象
+		 * 我们就针对这点进行模拟
+		 */
+    const oldXMLHttpRequestSend = XMLHttpRequest.prototype.send;
+    /** 重写对象的发送方法（模拟一下操作，我们可以不用重写） */
+    XMLHttpRequest.prototype.send = function () {
+        /** 只是增强相关的功能 */
+        if (this._url !== '') {
+            /** 执行旧的对象的方法 */
+            oldXMLHttpRequestSend.apply(this, arguments);
+        }
+    }
+    /** 签名方法 */
+    function signature(mark, url) {
+        /** 创建请求对象 */
+        const xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                COUNT_NUM ++;
+                document.getElementById('count').innerText = String(COUNT_NUM);
+                console.log('发送 ==> ' + mark + '@@@' + xhr._url);
+                console.log(xhr);
+                // ws.send(mark + '@@@' + xhr._url);
+            }
+        };
+        /** 写入 url */
+        xhr.open('get', url);
+        /** 发送请求 */
+        xhr.send();
+        /** 立马取消 （我们只需要签名即可） */
+        /** 当然你也可以写一个 JS 版本，然后通过 WebSocket 发送到后台去 */
+        xhr.abort();
+    }
+</script>
+<script type="text/javascript">
+    /** 连接 WebSocket 对象 */
 		const ws = new WebSocket('ws://127.0.0.1:8080/ws');
 		ws.onopen = function (e) {
 		    // 心跳线程
@@ -36,129 +99,27 @@
             ws.send('{"type": "heartbeat"}')
             setTimeout(() => heartbeat(), 60000);
 				}
-        console.log(e);
+        console.log('onopen ->', e);
         document.getElementById('status').innerText = '已连接';
         heartbeat();
 		};
 
 		ws.onclose = function (e) {
-        console.log(e);
+        console.log('onclose ->', e);
 		    document.getElementById('status').innerText = '未连接';
 		}
 
 		ws.onerror = function (e) {
-				console.log(e);
+				console.log('onerror ->', e);
 		};
 
 		ws.onmessage = function (e) {
 		    const data = String(e.data);
-				console.log('收到 ==> ' + data);
-				if (data.indexOf('@@@') >= 0) {
+				console.log('onmessage ==> ', data, e);
+				if (data.indexOf('@@@') >= 1) {
             const ds = data.split('@@@');
 				    signature(ds[0], ds[1]);
 				}
 		};
-
-		function signature(mark, url) {
-				const xhr = new XMLHttpRequest()
-				xhr.onreadystatechange = function () {
-						if (xhr.readyState === 4) {
-                console.log('发送 ==> ' + mark + '@@@' + xhr._url);
-								ws.send(mark + '@@@' + xhr._url);
-						}
-				};
-				xhr.open('get', url);
-				xhr.send();
-				xhr.abort();
-		}
-
-    const oldXMLHttpRequestSend = XMLHttpRequest.prototype.send;
-
-		XMLHttpRequest.prototype.send = function () {
-		    if (this._url !== '') {
-            oldXMLHttpRequestSend.apply(this, arguments);
-				}
-		}
-
-// 		// 请求拦截
-//     (function () {
-//
-//         var onLoadStart = function (e) {
-//             // console.log('onLoadStart -- ' + this);
-// 				}
-//
-//         var onLoadEnd = function (e) {
-//             // console.log('onLoadEnd -- ' + this);
-//         }
-//
-//         var onError = function (e) {
-//             // console.log('onError' + this);
-//         }
-//
-//         // create XMLHttpRequest proxy object
-//         var oldXMLHttpRequest = XMLHttpRequest;
-//         // define constructor for my proxy object
-//         window.XMLHttpRequest = function () {
-//             var actual = new oldXMLHttpRequest();
-//             var self = this;
-//             this.onreadystatechange = null;
-//             // this is the actual handler on the real XMLHttpRequest object
-//             actual.onreadystatechange = function () {
-//                 if (this.readyState == 1) {
-//                     onLoadStart.call(this);
-//                 } else if (this.readyState == 4) {
-//                     if(this.status==200)
-//                         onLoadEnd.call(this);
-//                     else{
-//                         onError.call(this);
-//                     }
-//                 }
-//                 if (self.onreadystatechange) {
-//                     return self.onreadystatechange();
-//                 }
-//             };
-//
-// // add all proxy getters
-//             ["status", "statusText", "responseType", "response",
-//                 "readyState", "responseXML", "upload"
-//             ].forEach(function (item) {
-//                 Object.defineProperty(self, item, {
-//                     get: function () {
-//                         return actual[item];
-//                     },
-//                     set: function (val) {
-//                         actual[item] = val;
-//                     }
-//                 });
-//             });
-// // add all proxy getters/setters
-//             ["ontimeout, timeout", "withCredentials", "onload", "onerror", "onprogress"].forEach(function (item) {
-//                 Object.defineProperty(self, item, {
-//                     get: function () {
-//                         return actual[item];
-//                     },
-//                     set: function (val) {
-//                         actual[item] = val;
-//                     }
-//                 });
-//             });
-// // add all pure proxy pass-through methods
-//             ["addEventListener", "send", "open", "abort", "getAllResponseHeaders",
-//                 "getResponseHeader", "overrideMimeType", "setRequestHeader", "removeEventListener"
-//             ].forEach(function (item) {
-//                 Object.defineProperty(self, item, {
-//                     value: function () {
-//                         if (item === 'send' && actual._url === '') {
-// 												} else {
-//                             return actual[item].apply(actual, arguments);
-// 												}
-//                     }
-//                 });
-//             });
-//
-//         }
-//     })();
-
-
 </script>
 </html>
