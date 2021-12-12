@@ -146,11 +146,13 @@ public class Codec extends LiveRoomCodec<Message> {
                                 final int mSpare = Utils.bytesToIntBig(Utils.bytesIntercept(mBytes, 12, 4));
                                 if (mLen1 > HEADER_LENGTH && mLen2 == HEADER_LENGTH) {
                                     final Message message = this.builder.deserialization(Utils.bytesIntercept(mBytes, 16, mBytes.length - 16));
-                                    message.setType(mType);
-                                    message.setSpare(mSpare);
-                                    message.setLength(mLen1);
-                                    message.setAgreement(mAgreement);
-                                    result.add(message);
+                                    if (message != null) {
+                                        message.setType(mType);
+                                        message.setSpare(mSpare);
+                                        message.setLength(mLen1);
+                                        message.setAgreement(mAgreement);
+                                        result.add(message);
+                                    }
                                 } else {
                                     LOGGER.error("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");
                                     throw new IOException("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");
@@ -166,11 +168,13 @@ public class Codec extends LiveRoomCodec<Message> {
                                 message = new Message();
                                 message.setData(new String(bytes, StandardCharsets.UTF_8));
                             }
-                            message.setType(type);
-                            message.setSpare(spare);
-                            message.setLength(len1);
-                            message.setAgreement(agreement);
-                            result.add(message);
+                            if (message != null) {
+                                message.setType(type);
+                                message.setSpare(spare);
+                                message.setLength(len1);
+                                message.setAgreement(agreement);
+                                result.add(message);
+                            }
                         }
                     } else {
                         LOGGER.error("[ BiliBili ] " + "unread length is less than content length, entire message is discarded !!");

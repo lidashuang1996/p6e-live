@@ -18,6 +18,8 @@ import io.netty.buffer.Unpooled;
  */
 public final class Taf {
 
+    private static final boolean IS_DEBUG = false;
+
     /**
      * 解码
      */
@@ -47,9 +49,11 @@ public final class Taf {
                     continue;
                 }
                 if (stack.empty()) {
-                    result.put(info[0], getData(info[1], input));
+                    final Object o = getData(info[1], input);
+                    result.put(info[0], o);
                 } else {
-                    stack.peek().put(info[0], getData(info[1], input));
+                    final Object o = getData(info[1], input);
+                    stack.peek().put(info[0], o);
                 }
             }
             return result;
@@ -303,7 +307,14 @@ public final class Taf {
         public Object getSimpleList(ByteBuf input) {
             final int type = getInt1(input);
             if (type == 0) {
+                // type = 0 字解码类型，继续对字解码迭代的类型
                 final int len = getLengthType(input);
+                if (len == -1) {
+                    final byte[] bs = new byte[input.readableBytes()];
+                    input.readBytes(bs);
+                    return null;
+                }
+
                 final ByteBuf byteBuf = input.readBytes(len);
                 try {
                     // 0x7b ... 0x7d
@@ -312,11 +323,16 @@ public final class Taf {
                         byteBuf.readBytes(bytes);
                         return bytes;
                     } else {
+                        byteBuf.resetReaderIndex();
+                        final byte[] bs = new byte[byteBuf.readableBytes()];
+                        byteBuf.readBytes(bs);
                         return execute(byteBuf.resetReaderIndex());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    return new HashMap<>();
+                    return new HashMap<>(0);
+                } finally {
+                    byteBuf.release();
                 }
             }
             throw new RuntimeException("simple list type error.");
@@ -487,6 +503,7 @@ public final class Taf {
         public void setNullType(ByteBuf out) {
             out.writeByte(12);
         }
+
         public void setLengthType(ByteBuf out, long v) {
             if (v < 0xFF) {
                 out.writeByte(0);

@@ -129,4 +129,12 @@ public class Client {
     public void sendMessage(Message message) {
         this.p6eWebSocketClient.sendMessageBinary(this.codec.encode(message));
     }
+
+    /**
+     * 获取源的客户端对象
+     * @return 源的客户端对象
+     */
+    public P6eWebSocketClient getP6eWebSocketClient() {
+        return p6eWebSocketClient;
+    }
 }

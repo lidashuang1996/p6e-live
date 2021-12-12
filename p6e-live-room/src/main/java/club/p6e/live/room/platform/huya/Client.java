@@ -1,9 +1,7 @@
 package club.p6e.live.room.platform.huya;
 
 import club.p6e.live.room.LiveRoomCodec;
-import club.p6e.live.room.utils.Utils;
 import club.p6e.websocket.client.P6eWebSocketClient;
-import io.netty.buffer.ByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,11 +63,19 @@ public class Client {
     }
 
     /**
-     *
+     * 获取源的客户端对象
+     * @return 源的客户端对象
      */
-    public void monitorEvent() {
-        // 6501 礼物
-        // 1400 弹幕
+    public P6eWebSocketClient getP6eWebSocketClient() {
+        return p6eWebSocketClient;
+    }
+
+    /**
+     * 发送监听房间的初始化消息
+     * 6501 礼物
+     * 1400 弹幕
+     */
+    public void sendInitMessage() {
         final Template<BarrageEventTemplate> template = new Template<>();
         template.setType(16);
         template.setData(new BarrageEventTemplate(this.rid, this.rid));
@@ -78,10 +84,25 @@ public class Client {
         this.sendMessage(message);
     }
 
-    public P6eWebSocketClient getP6eWebSocketClient() {
-        return p6eWebSocketClient;
+    /**
+     * 发送监听房间的初始化消息
+     * 6501 礼物
+     * 1400 弹幕
+     */
+    public void sendPantMessage() {
+        final Template<List<Object>> template = new Template<>();
+        template.setType(16);
+        template.setData(new UserHeartBeatDataTemplate().toList());
+        final Message message = new Message();
+        message.setData(template.toList());
+        this.sendMessage(message);
     }
 
+    /**
+     * 虎牙的发送消息模版
+     * @param <T> 内容的类型
+     */
+    @SuppressWarnings("all")
     public static class Template<T> {
         private int type = 3;
         private T data;
@@ -171,6 +192,9 @@ public class Client {
         }
     }
 
+    /**
+     * 房间消息模版
+     */
     public static class BarrageEventTemplate {
         private List<String> list;
         private String unknown1 = "";
@@ -198,6 +222,40 @@ public class Client {
 
         public void setUnknown1(String unknown1) {
             this.unknown1 = unknown1;
+        }
+    }
+
+
+    @SuppressWarnings("all")
+    public static class UserHeartBeatDataTemplate {
+        private Integer unknown1 = 3;
+        private Object unknown2;
+        private Object unknown3;
+        private Integer unknown4 = 6;
+        private String unknown5 = "onlineui";
+        private String unknown6 = "OnUserHeartBeat";
+        private Object unknown7;
+        private Object unknown8;
+        private Object unknown9;
+        private Object unknown10;
+
+        public UserHeartBeatDataTemplate() {
+            
+        }
+
+        public List<Object> toList() {
+            final List<Object> list = new ArrayList<>();
+            list.add(unknown1);
+            list.add(unknown2);
+            list.add(unknown3);
+            list.add(unknown4);
+            list.add(unknown5);
+            list.add(unknown6);
+            list.add(unknown7);
+            list.add(unknown8);
+            list.add(unknown9);
+            list.add(unknown10);
+            return list;
         }
     }
 }

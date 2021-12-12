@@ -120,7 +120,7 @@ public class Handler implements P6eWebSocketCallback {
                 this.clientHuYa = this.clientHuYaIntensifier.enhance(this.clientHuYa);
             }
             // 发送监听弹幕推送的消息
-            this.clientHuYa.monitorEvent();
+            this.clientHuYa.sendInitMessage();
 
             // 心跳任务创建
             // 心跳任务如果存在将关闭
@@ -138,7 +138,7 @@ public class Handler implements P6eWebSocketCallback {
                 @Override
                 public void execute() {
                     // 发送监听弹幕推送的消息
-                    clientHuYa.monitorEvent();
+                    clientHuYa.sendPantMessage();
                 }
             };
 

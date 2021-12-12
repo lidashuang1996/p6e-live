@@ -31,13 +31,17 @@ public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
     public synchronized Message deserialization(byte[] bytes) {
         ByteBuf byteBuf = null;
         try {
+            final Message message = new Message();
             byteBuf = Unpooled.buffer(bytes.length);
             byteBuf.writeBytes(bytes);
             final Map<Integer, Object> map = TAF_DECODE.execute(byteBuf);
-            final Message message = new Message();
             message.setData(map);
             return message;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         } finally {
+            TAF_DECODE.cleanStack();
             if (byteBuf != null) {
                 byteBuf.release();
             }
