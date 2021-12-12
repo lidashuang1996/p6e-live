@@ -73,6 +73,6 @@ public interface LiveRoomCallback {
         public void onOpen();
         public void onClose();
         public void onError(Throwable throwable);
-        public void onMessage(club.p6e.live.room.platform.douyin.Message message);
+        public void onMessage(List<club.p6e.live.room.platform.douyin.Message> messages);
     }
 }

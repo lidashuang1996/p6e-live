@@ -3,7 +3,6 @@ package club.p6e.live.room.platform.douyin;
 import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
 import club.p6e.live.room.LiveRoomCodec;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +32,8 @@ public class Application extends LiveRoomApplication {
     /** 编解码器 */
     private static LiveRoomCodec<Message> CODEC = new Codec(new MessageBuilder());
 
+    /** 处理器对象 */
     private final Handler handler;
-
-    /** WebSocketClient 对象 */
-    private Channel channel;
 
     /**
      * 读取编解码器
@@ -64,6 +61,7 @@ public class Application extends LiveRoomApplication {
 
     /**
      * 构造方法初始化
+     * @param url URL 模版
      * @param rid 房间的 ID
      * @param callback 回调的函数
      */
@@ -71,11 +69,49 @@ public class Application extends LiveRoomApplication {
         this.handler = new Handler(url, rid, getCodec(), callback);
     }
 
+    /**
+     * 获取连接的地址
+     * @return 连接的地址
+     */
+    public String getUrl() {
+        return handler.getUrl();
+    }
+
+    /**
+     * 获取处理器对象
+     * @return 处理器对象
+     */
+    public Handler getHandler() {
+        return handler;
+    }
+
+    /**
+     * 获取处理器对象
+     * @return 处理器对象
+     */
+    public String getHandlerId() {
+        return handler.getId();
+    }
+
+    /**
+     * 获取 RID
+     * @return RID
+     */
+    public String getRid() {
+        return handler.getRid();
+    }
+    
     @Override
     public void connect() {
+        LOGGER.info("[ DouYin " + this.getRid() + " ] start connect handler [ " + this.getHandlerId() + " ].");
+        this.handler.shutdown();
+        LOGGER.info("[ DouYin " + this.getRid() + " ] end connect handler [ " + this.getHandlerId() + " ].");
     }
 
     @Override
     public void shutdown() {
+        LOGGER.info("[ DouYin " + this.getRid() + " ] start closing handler [ " + this.getHandlerId() + " ].");
+        this.handler.shutdown();
+        LOGGER.info("[ DouYin " + this.getRid() + " ] end closing handler [ " + this.getHandlerId() + " ].");
     }
 }

@@ -15,6 +15,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
 
     @Override
     public byte[] serialization(Message message) {
+        // 抖音特殊不需要序列化
         return new byte[0];
     }
 }
