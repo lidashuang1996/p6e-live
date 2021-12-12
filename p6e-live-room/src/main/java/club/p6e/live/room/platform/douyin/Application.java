@@ -2,9 +2,10 @@ package club.p6e.live.room.platform.douyin;
 
 import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
+import club.p6e.live.room.LiveRoomCodec;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.UUID;
 
 /**
  * @author lidashuang
@@ -29,7 +30,28 @@ public class Application extends LiveRoomApplication {
             "&last_rtt=${rtt}" +
             "&did_rule=3";
 
+    /** 编解码器 */
+    private static LiveRoomCodec<Message> CODEC = new Codec(new MessageBuilder());
+
     private final Handler handler;
+
+    /** WebSocketClient 对象 */
+    private Channel channel;
+
+    /**
+     * 读取编解码器
+     * @return 编解码器
+     */
+    public static LiveRoomCodec<Message> getCodec() {
+        return CODEC;
+    }
+
+    /**
+     * 写入编解码器
+     */
+    public static void setCodec(LiveRoomCodec<Message> codec) {
+        CODEC = codec;
+    }
 
     /**
      * 构造方法初始化
@@ -46,7 +68,7 @@ public class Application extends LiveRoomApplication {
      * @param callback 回调的函数
      */
     public Application(String url, String rid, LiveRoomCallback.DouYin callback) {
-        this.handler = new Handler(url, rid, callback);
+        this.handler = new Handler(url, rid, getCodec(), callback);
     }
 
     @Override

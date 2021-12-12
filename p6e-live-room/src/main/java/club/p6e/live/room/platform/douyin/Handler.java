@@ -1,6 +1,7 @@
 package club.p6e.live.room.platform.douyin;
 
 import club.p6e.live.room.LiveRoomCallback;
+import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.live.room.utils.HttpUtil;
 import club.p6e.live.room.utils.Utils;
 import io.netty.buffer.ByteBuf;
@@ -24,12 +25,16 @@ public class Handler {
 
     private final String url;
     private final String rid;
-    private final Codec codec;
+    private final LiveRoomCodec<Message> codec;
     private final LiveRoomCallback.DouYin callback;
 
     private volatile String status = "";
 
     public Handler(String url, String rid, LiveRoomCallback.DouYin callback) {
+        this(url, rid, null, callback);
+    }
+
+    public Handler(String url, String rid, LiveRoomCodec<Message> codec, LiveRoomCallback.DouYin callback) {
         this.url = url;
         this.rid = rid;
         this.codec = codec;
