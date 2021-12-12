@@ -18,8 +18,6 @@ import io.netty.buffer.Unpooled;
  */
 public final class Taf {
 
-    private static final boolean IS_DEBUG = false;
-
     /**
      * 解码
      */

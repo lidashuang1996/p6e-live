@@ -41,7 +41,7 @@ public class P6eFileApplication {
             @Override
             public void onMessage(Client client, List<Message> messages) {
                 for (Message message : messages) {
-                    System.out.println(message.data());
+                    LOGGER.info(message.data().toString());
                 }
             }
 
