@@ -33,7 +33,8 @@ public class Handler {
         public void execute(List<Message> messages) throws Exception;
     }
 
-    private String id;
+    /** ID */
+    private final String id;
     /** URL */
     private final String url;
     /** RID */
@@ -64,6 +65,7 @@ public class Handler {
      * @param callback 回调函数
      */
     public Handler(String url, String rid, LiveRoomCodec<Message> codec, LiveRoomCallback.DouYin callback) {
+        this.id = Utils.generateUuid();
         this.url = url;
         this.rid = rid;
         this.codec = codec;
@@ -100,6 +102,10 @@ public class Handler {
 
     public String getId() {
         return id;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     /**
