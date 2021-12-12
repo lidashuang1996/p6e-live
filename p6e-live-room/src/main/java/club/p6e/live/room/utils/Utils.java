@@ -320,14 +320,8 @@ public final class Utils {
         return result.toString();
     }
 
-    public static void  json() {
-
-
-
-    }
 
     private static final Gson GSON = (new GsonBuilder()).disableHtmlEscaping().create();
-
 
     public static String toJson(Object o) {
         return o == null ? null : GSON.toJson(o);

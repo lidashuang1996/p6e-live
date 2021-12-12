@@ -17,9 +17,12 @@ public class P6eFileApplication {
     private static final Logger LOGGER = LoggerFactory.getLogger(P6eFileApplication.class);
 
     public static void main(String[] args) {
-
         SpringApplication.run(P6eFileApplication.class, args);
         P6eLiveRoomApplication.init();
+
+        System.out.println(
+                Application.getLiveChannelId("https://www.huya.com/baozha")
+        );
 
         // https://www.huya.com/641641
         new Application("wss://3b3fe620-ws.va.huya.com/", "1199515480194", new LiveRoomCallback.HuYa() {

@@ -28,7 +28,7 @@ public class Handler implements P6eWebSocketCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
     /** 房间 ID */
-    private final String rid;
+    private final String liveChannelId;
     /** 是否异步 */
     private final boolean isAsync;
     /** 编码器 */
@@ -45,53 +45,53 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
+     * @param liveChannelId 房间 ID
      * @param callback 回调函数
      */
-    public Handler(String rid, LiveRoomCallback.HuYa callback) {
-        this(rid, true, Application.getCodec(), callback);
+    public Handler(String liveChannelId, LiveRoomCallback.HuYa callback) {
+        this(liveChannelId, true, Application.getCodec(), callback);
     }
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
+     * @param liveChannelId 房间 ID
      * @param isAsync 是否异步执行
      * @param callback 回调函数
      */
-    public Handler(String rid, boolean isAsync, LiveRoomCallback.HuYa callback) {
-        this(rid, isAsync, Application.getCodec(), callback);
+    public Handler(String liveChannelId, boolean isAsync, LiveRoomCallback.HuYa callback) {
+        this(liveChannelId, isAsync, Application.getCodec(), callback);
     }
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
+     * @param liveChannelId 房间 ID
      * @param codec 编解码器
      * @param callback 回调函数
      */
-    public Handler(String rid, LiveRoomCodec<Message> codec, LiveRoomCallback.HuYa callback) {
-        this(rid, true, codec, callback);
+    public Handler(String liveChannelId, LiveRoomCodec<Message> codec, LiveRoomCallback.HuYa callback) {
+        this(liveChannelId, true, codec, callback);
     }
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
+     * @param liveChannelId 房间 ID
      * @param isAsync 是否异步执行
      * @param codec 编解码器
      * @param callback 回调函数
      */
-    public Handler(String rid, boolean isAsync, LiveRoomCodec<Message> codec, LiveRoomCallback.HuYa callback) {
-        this.rid = rid;
+    public Handler(String liveChannelId, boolean isAsync, LiveRoomCodec<Message> codec, LiveRoomCallback.HuYa callback) {
+        this.liveChannelId = liveChannelId;
         this.isAsync = isAsync;
         this.codec = codec;
         this.callback = callback;
     }
 
     /**
-     * 获取 RID
-     * @return RID
+     * 获取 liveChannelId
+     * @return liveChannelId
      */
-    public String getRid() {
-        return rid;
+    public String getLiveChannelId() {
+        return liveChannelId;
     }
     
     /**
@@ -114,7 +114,7 @@ public class Handler implements P6eWebSocketCallback {
     public void onOpen(P6eWebSocketClient client) {
         try {
             // 创建客户端对象
-            this.clientHuYa = new Client(rid, codec, client);
+            this.clientHuYa = new Client(liveChannelId, codec, client);
             // 增强客户端对象
             if (this.clientHuYaIntensifier != null) {
                 this.clientHuYa = this.clientHuYaIntensifier.enhance(this.clientHuYa);
@@ -126,13 +126,13 @@ public class Handler implements P6eWebSocketCallback {
             // 心跳任务如果存在将关闭
             if (this.task != null) {
                 final String tid = this.task.getId();
-                LOGGER.warn("[ HuYa " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
-                LOGGER.warn("[ HuYa " + this.rid + " ] now execute to close task [ " + tid + " ]...");
-                LOGGER.info("[ HuYa: " + this.rid + " ] start closing task [ " + tid + " ].");
+                LOGGER.warn("[ HuYa " + this.liveChannelId + " ] instance has a previous task [ " + tid + " ]!!");
+                LOGGER.warn("[ HuYa " + this.liveChannelId + " ] now execute to close task [ " + tid + " ]...");
+                LOGGER.info("[ HuYa: " + this.liveChannelId + " ] start closing task [ " + tid + " ].");
                 this.task.close();
                 this.task = null;
-                LOGGER.info("[ HuYa: " + this.rid + " ] end closing task [ " + tid + " ].");
-                LOGGER.warn("[ HuYa " + this.rid + " ] closing successful [ " + tid + " ].");
+                LOGGER.info("[ HuYa: " + this.liveChannelId + " ] end closing task [ " + tid + " ].");
+                LOGGER.warn("[ HuYa " + this.liveChannelId + " ] closing successful [ " + tid + " ].");
             }
             new LiveRoomApplication.Task(60, 60, true) {
                 @Override
@@ -146,7 +146,7 @@ public class Handler implements P6eWebSocketCallback {
             this.callback.onOpen(this.clientHuYa);
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onError ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onError ==> " + e.getMessage());
         }
     }
 
@@ -156,16 +156,16 @@ public class Handler implements P6eWebSocketCallback {
             this.callback.onClose(this.clientHuYa);
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onClose ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onClose ==> " + e.getMessage());
         } finally {
             if (this.task == null) {
-                LOGGER.info("[ HuYa: " + this.rid + " ] no started task.");
+                LOGGER.info("[ HuYa: " + this.liveChannelId + " ] no started task.");
             } else {
                 final String tid = this.task.getId();
-                LOGGER.info("[ HuYa: " + this.rid + " ] start closing task [ " + tid + " ].");
+                LOGGER.info("[ HuYa: " + this.liveChannelId + " ] start closing task [ " + tid + " ].");
                 this.task.close();
                 this.task = null;
-                LOGGER.info("[ HuYa: " + this.rid + " ] end closing task [ " + tid + " ].");
+                LOGGER.info("[ HuYa: " + this.liveChannelId + " ] end closing task [ " + tid + " ].");
             }
         }
     }
@@ -176,7 +176,7 @@ public class Handler implements P6eWebSocketCallback {
             this.callback.onError(this.clientHuYa, throwable);
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onError ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onError ==> " + e.getMessage());
         }
     }
 
@@ -185,12 +185,12 @@ public class Handler implements P6eWebSocketCallback {
         try {
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessageText ==> "
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessageText ==> "
                     + new String(bytes, StandardCharsets.UTF_8)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessageText ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessageText ==> " + e.getMessage());
         } finally {
             byteBuf.release();
         }
@@ -205,7 +205,7 @@ public class Handler implements P6eWebSocketCallback {
             this.callback.onMessage(this.clientHuYa, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessageBinary ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessageBinary ==> " + e.getMessage());
         } finally {
             byteBuf.release();
         }
@@ -217,11 +217,11 @@ public class Handler implements P6eWebSocketCallback {
             client.sendMessagePing();
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessagePong ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessagePong ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessagePong ==> " + e.getMessage());
         } finally {
             byteBuf.release();
         }
@@ -233,11 +233,11 @@ public class Handler implements P6eWebSocketCallback {
             client.sendMessagePong();
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessagePing ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessagePing ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessagePing ==> " + e.getMessage());
         } finally {
             byteBuf.release();
         }
@@ -248,11 +248,11 @@ public class Handler implements P6eWebSocketCallback {
         try {
             final byte[] bytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(bytes);
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
                     + ", message format is incorrect and will be discarded.");
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[ HuYa: " + this.rid + " ] onMessageContinuation ==> " + e.getMessage());
+            LOGGER.error("[ HuYa: " + this.liveChannelId + " ] onMessageContinuation ==> " + e.getMessage());
         } finally {
             byteBuf.release();
         }

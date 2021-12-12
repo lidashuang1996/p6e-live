@@ -38,7 +38,7 @@ public class Client {
     }
 
     /** RID */
-    private final String rid;
+    private final String liveChannelId;
     /** 编解码器 */
     private final LiveRoomCodec<Message> codec;
     /** 客户端 */
@@ -46,11 +46,11 @@ public class Client {
 
     /**
      * 构造方法初始化
-     * @param rid RID
+     * @param liveChannelId LiveChannelId
      * @param p6eWebSocketClient WebSocket 客户端对象
      */
-    public Client(String rid, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
-        this.rid = rid;
+    public Client(String liveChannelId, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
+        this.liveChannelId = liveChannelId;
         this.codec = codec;
         this.p6eWebSocketClient = p6eWebSocketClient;
     }
@@ -78,7 +78,7 @@ public class Client {
     public void sendInitMessage() {
         final Template<BarrageEventTemplate> template = new Template<>();
         template.setType(16);
-        template.setData(new BarrageEventTemplate(this.rid, this.rid));
+        template.setData(new BarrageEventTemplate(this.liveChannelId, this.liveChannelId));
         final Message message = new Message();
         message.setData(template.toList());
         this.sendMessage(message);
