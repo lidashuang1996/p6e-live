@@ -1,8 +1,9 @@
 package club.p6e.live.room.platform.douyin;
 
 import club.p6e.live.room.LiveRoomApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
@@ -16,10 +17,13 @@ import java.util.Map;
  * @version 1.0
  */
 public final class Signature {
+    /** 分割符号 */
+    private static final String CHAR = "@@@";
     /** 心跳超时时间 */
     private static final long HEARTBEAT_DATE_TIME = 100000;
     /** 心跳消息的内容 */
     private static final String HEARTBEAT_CONTENT = "{\"type\":\"heartbeat\"}";
+    private static final Logger LOGGER = LoggerFactory.getLogger(Signature.class);
 
     private static final Map<String, MessageCache> MESSAGE_CACHE = new HashMap<>();
     private static final long MESSAGE_DATE_TIME = 60000;
@@ -28,7 +32,6 @@ public final class Signature {
         synchronized (MESSAGE_CACHE) {
             MESSAGE_CACHE.put(key, value);
         }
-
     }
 
     public static void removeMessageCache(String key) {
@@ -44,7 +47,7 @@ public final class Signature {
      */
     public static void execute(String id, MessageCache message) throws IOException {
         putMessageCache(id, message);
-        fetchWebSocketCache().sendMessage(new TextMessage(id + "@@@" + message.getContent()));
+        fetchWebSocketCache().sendMessage(new TextMessage(id + CHAR + message.getContent()));
     }
 
     /**
@@ -54,8 +57,11 @@ public final class Signature {
      */
     public static void callback(String id, String content) {
         try {
+            LOGGER.info("websocket callback => [ " + id + " ], content: " + content);
             final MessageCache messageCache = MESSAGE_CACHE.get(id);
+            System.out.println(messageCache);
             if (messageCache != null && messageCache.getCallback() != null) {
+                System.out.println(messageCache.getCallback());
                 messageCache.getCallback().execute(content);
             }
         } catch (Exception e) {

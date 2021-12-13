@@ -33,6 +33,10 @@ public class Handler {
         public void execute(List<Message> messages) throws Exception;
     }
 
+    /** 分割符号 */
+    private static final String CHAR = "@@@";
+    private static final int EXT_INDEX = 5;
+
     /** ID */
     private final String id;
     /** URL */
@@ -153,7 +157,7 @@ public class Handler {
      */
     private void task(String url, Callback callback) {
         try {
-            System.out.println("url   " + url);
+            System.out.println("xxxx " + url);
             HttpUtil.http(new HttpGet(url), httpResponse -> {
                 final int statusCode = httpResponse.getStatusLine().getStatusCode();
                 final InputStream inputStream = httpResponse.getEntity().getContent();
@@ -168,29 +172,21 @@ public class Handler {
                             while ((i = inputStream.read()) != -1) {
                                 byteBuf.writeByte(i);
                             }
-//
-//                            byte[] bs = new byte[byteBuf.readableBytes()];
-//                            byteBuf.readBytes(bs);
-//                            byteBuf.resetReaderIndex();
-//                            System.out.println(Utils.bytesToHex(bs));
-//                            System.out.println(new String(bs));
 
+                            // 解码得到消息列表
                             final List<Message> messages = this.codec.decode(byteBuf);
+
+                            final long currentDateTime = System.currentTimeMillis();
+                            final long rtt = currentDateTime % 1000;
+                            final String ext = Utils.objectToString(messages.get(0).extend().get(EXT_INDEX));
+                            final String[] extList = ext.split("\\|");
+                            final String cursor = (extList.length >= 4 && extList[3] != null && extList[3].length() > 12) ? extList[3].substring(12) : "";
+                            Signature.execute(this.id, new Signature.MessageCache(this.getTranslationUrl(
+                                    ext, cursor, String.valueOf(rtt)) + CHAR + currentDateTime, content -> this.task(content, this.callback::onMessage)));
+
                             // 处理器处理收到的消息
                             if (callback != null) {
                                 callback.execute(messages);
-                            }
-                            // 继续发送请求
-                            try {
-                                final long rtt = System.currentTimeMillis() % 1000;
-                                final String ext = Utils.objectToString(message.get(5));
-                                final String[] extList = ext.split("\\|");
-                                final String cursor = (extList.length >= 5
-                                        && extList[4] != null && extList.length > 12) ? extList[4].substring(12) : "";
-                                Thread.sleep(1000);
-                                Signature.execute(id, getTranslationUrl(ext, cursor, String.valueOf(rtt)));
-                            } catch (Exception e) {
-                                throw new IOException(e);
                             }
                         } catch (Exception e) {
                             throw new IOException(e);

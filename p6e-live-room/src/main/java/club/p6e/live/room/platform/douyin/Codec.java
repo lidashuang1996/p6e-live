@@ -34,8 +34,8 @@ public class Codec extends LiveRoomCodec<Message> {
         final List<Message> messages = new ArrayList<>();
         final Map<Integer, Object> map = decodeByteBufToMessage(byteBuf);
         // 拆分消息
-        if (map.size() >= 1 && map.get(0) instanceof List) {
-            final List<Object> list = (List<Object>) map.get(0);
+        if (map.size() >= 1 && map.get(1) instanceof List) {
+            final List<Object> list = (List<Object>) map.get(1);
             final Map<Integer, Object> extend = new HashMap<>(4);
             extend.put(2, map.get(2));
             extend.put(3, map.get(3));
@@ -63,7 +63,6 @@ public class Codec extends LiveRoomCodec<Message> {
             message.setData(map);
             messages.add(message);
         }
-        System.out.println(messages.size());
         return messages;
     }
 

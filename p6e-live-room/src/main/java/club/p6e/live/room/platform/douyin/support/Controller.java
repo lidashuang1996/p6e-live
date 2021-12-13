@@ -43,7 +43,7 @@ public class Controller {
             @Override
             public void onMessage(List<Message> messages) {
                 for (Message message : messages) {
-                    System.out.println("MM -> " + Utils.toJson(message.data()));
+                    System.out.println("DY -> " + Utils.toJson(message.data()));
                 }
             }
         }).connect();
