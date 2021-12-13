@@ -77,10 +77,17 @@ public class Handler {
      */
     void connect() {
         // 开始执行连接
-        execute(this.getTranslationUrl(), (List<Message> messages) -> {
-            this.callback.onOpen();
-            this.callback.onMessage(messages);
-        });
+        try {
+            Signature.execute(this.id, new Signature.MessageCache(this.getTranslationUrl(),
+                    content -> task(content, messages -> {
+                        callback.onOpen();
+                        callback.onMessage(messages);
+                    })));
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.callback.onError(e);
+            this.shutdown();
+        }
     }
 
     /**
@@ -144,8 +151,9 @@ public class Handler {
      * 执行任务
      * @param url 签名后的请求路径
      */
-    private void execute(String url, Callback callback) {
+    private void task(String url, Callback callback) {
         try {
+            System.out.println("url   " + url);
             HttpUtil.http(new HttpGet(url), httpResponse -> {
                 final int statusCode = httpResponse.getStatusLine().getStatusCode();
                 final InputStream inputStream = httpResponse.getEntity().getContent();
@@ -160,21 +168,30 @@ public class Handler {
                             while ((i = inputStream.read()) != -1) {
                                 byteBuf.writeByte(i);
                             }
+//
+//                            byte[] bs = new byte[byteBuf.readableBytes()];
+//                            byteBuf.readBytes(bs);
+//                            byteBuf.resetReaderIndex();
+//                            System.out.println(Utils.bytesToHex(bs));
+//                            System.out.println(new String(bs));
+
+                            final List<Message> messages = this.codec.decode(byteBuf);
                             // 处理器处理收到的消息
                             if (callback != null) {
-                                callback.execute(this.codec.decode(byteBuf));
+                                callback.execute(messages);
                             }
-//                            try {
-//                                final long rtt = System.currentTimeMillis() % 1000;
-//                                final String ext = Utils.objectToString(message.get(5));
-//                                final String[] extList = ext.split("\\|");
-//                                final String cursor = (extList.length >= 5
-//                                        && extList[4] != null && extList.length > 12) ? extList[4].substring(12) : "";
-//                                Thread.sleep(1000);
-//                                Signature.execute(id, getTranslationUrl(ext, cursor, String.valueOf(rtt)));
-//                            } catch (Exception e) {
-//                                throw new IOException(e);
-//                            }
+                            // 继续发送请求
+                            try {
+                                final long rtt = System.currentTimeMillis() % 1000;
+                                final String ext = Utils.objectToString(message.get(5));
+                                final String[] extList = ext.split("\\|");
+                                final String cursor = (extList.length >= 5
+                                        && extList[4] != null && extList.length > 12) ? extList[4].substring(12) : "";
+                                Thread.sleep(1000);
+                                Signature.execute(id, getTranslationUrl(ext, cursor, String.valueOf(rtt)));
+                            } catch (Exception e) {
+                                throw new IOException(e);
+                            }
                         } catch (Exception e) {
                             throw new IOException(e);
                         } finally {

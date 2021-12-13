@@ -10,6 +10,7 @@ public class MessageBuilder extends LiveRoomMessageBuilder<Message> {
 
     @Override
     public Message deserialization(byte[] bytes) {
+        // 抖音特殊不需要反序列化
         return null;
     }
 

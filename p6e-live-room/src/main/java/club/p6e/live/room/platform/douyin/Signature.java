@@ -56,7 +56,7 @@ public final class Signature {
         try {
             final MessageCache messageCache = MESSAGE_CACHE.get(id);
             if (messageCache != null && messageCache.getCallback() != null) {
-                messageCache.getCallback().execute();
+                messageCache.getCallback().execute(content);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -123,7 +123,7 @@ public final class Signature {
     public static class MessageCache {
 
         public interface Callback {
-            public void execute() throws Exception;
+            public void execute(String content) throws Exception;
         }
 
         private final long dateTime;

@@ -59,8 +59,10 @@
 		 * 我们就针对这点进行模拟
 		 */
     const oldXMLHttpRequestSend = XMLHttpRequest.prototype.send;
-    /** 重写对象的发送方法（模拟一下操作，我们可以不用重写） */
     XMLHttpRequest.prototype.send = function () {
+        if (this._method === 'post') {
+            this.abort();
+				}
         /** 只是增强相关的功能 */
         if (this._url !== '') {
             /** 执行旧的对象的方法 */
@@ -75,9 +77,9 @@
             if (xhr.readyState === 4) {
                 COUNT_NUM ++;
                 document.getElementById('count').innerText = String(COUNT_NUM);
+
                 console.log('发送 ==> ' + mark + '@@@' + xhr._url);
-                console.log(xhr);
-                // ws.send(mark + '@@@' + xhr._url);
+                ws.send(mark + '@@@' + xhr._url);
             }
         };
         /** 写入 url */
@@ -95,8 +97,8 @@
 		ws.onopen = function (e) {
 		    // 心跳线程
 				const heartbeat = () => {
-            console.log('发送 ==> {"type": "heartbeat"}');
-            ws.send('{"type": "heartbeat"}')
+            console.log('发送 ==> {"type":"heartbeat"}');
+            ws.send('{"type":"heartbeat"}')
             setTimeout(() => heartbeat(), 60000);
 				}
         console.log('onopen ->', e);

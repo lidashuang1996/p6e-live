@@ -104,7 +104,7 @@ public class Application extends LiveRoomApplication {
     @Override
     public void connect() {
         LOGGER.info("[ DouYin " + this.getRid() + " ] start connect handler [ " + this.getHandlerId() + " ].");
-        this.handler.shutdown();
+        this.handler.connect();
         LOGGER.info("[ DouYin " + this.getRid() + " ] end connect handler [ " + this.getHandlerId() + " ].");
     }
 
