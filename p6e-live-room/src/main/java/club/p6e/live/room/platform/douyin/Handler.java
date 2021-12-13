@@ -6,13 +6,16 @@ import club.p6e.live.room.utils.HttpUtil;
 import club.p6e.live.room.utils.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lidashuang
@@ -151,17 +154,35 @@ public class Handler {
         }
     }
 
+    private String msToken = "";
+
     /**
      * 执行任务
      * @param url 签名后的请求路径
      */
     private void task(String url, Callback callback) {
         try {
-            System.out.println("xxxx " + url);
             HttpUtil.http(new HttpGet(url), httpResponse -> {
                 final int statusCode = httpResponse.getStatusLine().getStatusCode();
                 final InputStream inputStream = httpResponse.getEntity().getContent();
-                // 读取流释放≤
+
+                final Header[] headers = httpResponse.getAllHeaders();
+                for (Header header : headers) {
+                    if ("set-cookie".equals(header.getName())) {
+                        final String v = header.getValue();
+                        for (String s : v.split(";")) {
+                            final String[] ss = s.trim().split("=");
+                            if ("msToken".equals(ss[0])) {
+                               if ("".equals(msToken)) {
+                                   msToken = ss[1];
+                               }
+                            }
+                        }
+                    }
+                }
+                System.out.println("ttt::: " + msToken);
+
+                // 读取流释放
                 try {
                     // 如果成功就继续处理
                     if (statusCode == HttpStatus.SC_OK) {
@@ -176,13 +197,8 @@ public class Handler {
                             // 解码得到消息列表
                             final List<Message> messages = this.codec.decode(byteBuf);
 
-                            final long currentDateTime = System.currentTimeMillis();
-                            final long rtt = currentDateTime % 1000;
-                            final String ext = Utils.objectToString(messages.get(0).extend().get(EXT_INDEX));
-                            final String[] extList = ext.split("\\|");
-                            final String cursor = (extList.length >= 4 && extList[3] != null && extList[3].length() > 12) ? extList[3].substring(12) : "";
-                            Signature.execute(this.id, new Signature.MessageCache(this.getTranslationUrl(
-                                    ext, cursor, String.valueOf(rtt)) + CHAR + currentDateTime, content -> this.task(content, this.callback::onMessage)));
+                            // 下一次任务
+                            nextTask(messages);
 
                             // 处理器处理收到的消息
                             if (callback != null) {
@@ -204,6 +220,17 @@ public class Handler {
             this.callback.onError(e);
             this.shutdown();
         }
+    }
+
+    private void nextTask(List<Message> messages) throws IOException {
+        System.out.println(Utils.toJson(messages.get(0))  + "  " + Utils.toJson(messages.get(0).data()));
+        final long currentDateTime = System.currentTimeMillis();
+        final long rtt = currentDateTime % 1000;
+        final String ext = Utils.objectToString(messages.get(0).extend().get(EXT_INDEX));
+        final String[] extList = ext.split("\\|");
+        final String cursor = (extList.length >= 4 && extList[3] != null && extList[3].length() > 12) ? extList[3].substring(12) : "";
+        Signature.execute(this.id, new Signature.MessageCache((this.getTranslationUrl(
+                ext, cursor, String.valueOf(rtt)) + ("".equals(msToken) ? "" : ("&msToken=" + msToken)) + CHAR + currentDateTime), content -> this.task(content, this.callback::onMessage)));
     }
 
 }

@@ -24,7 +24,7 @@ public class Controller {
 
     @RequestMapping("/douyin")
     public Object douyin() {
-        new Application("7040828559455554317", new LiveRoomCallback.DouYin() {
+        new Application("7041089948141062953", new LiveRoomCallback.DouYin() {
             @Override
             public void onOpen() {
 

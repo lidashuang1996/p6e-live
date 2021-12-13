@@ -29,18 +29,19 @@ public class Codec extends LiveRoomCodec<Message> {
     @SuppressWarnings("all")
     public List<Message> decode(ByteBuf byteBuf) {
         // 解码的内容长度
-        LOGGER.debug("[ DouYin ] decode content length ==> " + byteBuf.readableBytes());
+        LOGGER.info("[ DouYin ] decode content length ==> " + byteBuf.readableBytes());
         // 解码且将返回的对象添加到管道中
         final List<Message> messages = new ArrayList<>();
         final Map<Integer, Object> map = decodeByteBufToMessage(byteBuf);
+        System.out.println("map ::::  ::: " + map);
+        final Map<Integer, Object> extend = new HashMap<>(4);
+        extend.put(2, map.get(2));
+        extend.put(3, map.get(3));
+        extend.put(4, map.get(4));
+        extend.put(5, map.get(5));
         // 拆分消息
         if (map.size() >= 1 && map.get(1) instanceof List) {
             final List<Object> list = (List<Object>) map.get(1);
-            final Map<Integer, Object> extend = new HashMap<>(4);
-            extend.put(2, map.get(2));
-            extend.put(3, map.get(3));
-            extend.put(4, map.get(4));
-            extend.put(5, map.get(5));
             for (final Object o : list) {
                 final Message message = new Message();
                 if (o instanceof Map) {
@@ -61,6 +62,7 @@ public class Codec extends LiveRoomCodec<Message> {
         } else {
             final Message message = new Message();
             message.setData(map);
+            message.setExtend(extend);
             messages.add(message);
         }
         return messages;

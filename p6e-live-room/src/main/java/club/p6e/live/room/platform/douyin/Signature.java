@@ -59,15 +59,13 @@ public final class Signature {
         try {
             LOGGER.info("websocket callback => [ " + id + " ], content: " + content);
             final MessageCache messageCache = MESSAGE_CACHE.get(id);
-            System.out.println(messageCache);
+            // 读取完成后删除数据
+            removeMessageCache(id);
             if (messageCache != null && messageCache.getCallback() != null) {
-                System.out.println(messageCache.getCallback());
                 messageCache.getCallback().execute(content);
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            removeMessageCache(id);
         }
     }
 
