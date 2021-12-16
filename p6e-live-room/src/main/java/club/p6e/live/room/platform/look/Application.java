@@ -1,4 +1,8 @@
 //package club.p6e.live.room.platform.look;
+// 网易云 -- 和 look 一样的
+// 签名
+// 结果
+//
 //
 //import club.p6e.live.room.LiveRoomApplication;
 //import club.p6e.live.room.LiveRoomCallback;

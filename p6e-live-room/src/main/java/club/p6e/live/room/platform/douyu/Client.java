@@ -81,7 +81,7 @@ public class Client {
     public void sendGroupMessage() {
         final Message message = new Message();
         message.put("rid", rid);
-        message.put("gid", "1");
+        message.put("gid", "-9999");
         message.put("type", "joingroup");
         this.sendMessage(message);
     }
