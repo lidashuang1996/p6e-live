@@ -81,6 +81,7 @@ public class Client {
     public void sendGroupMessage() {
         final Message message = new Message();
         message.put("rid", rid);
+        // 加入海量弹幕模式的分组
         message.put("gid", "-9999");
         message.put("type", "joingroup");
         this.sendMessage(message);
