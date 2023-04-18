@@ -4,7 +4,6 @@ import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.live.room.utils.HttpUtil;
-import club.p6e.live.room.utils.Utils;
 import club.p6e.websocket.client.Config;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;

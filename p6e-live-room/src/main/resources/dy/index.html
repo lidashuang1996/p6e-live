@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script type="text/javascript" src="../js/Living.383cecc1.js"></script>
+</head>
+<body>
+
+</body>
+<script>
+    /** 创建请求对象 */
+    const xhr = new XMLHttpRequest()
+    xhr.onreadystatechange = function () {
+        console.log(this);
+    };
+    /** 写入 url */
+    xhr.open('get', 'https://baidu.com');
+    /** 发送请求 */
+    xhr.send();
+    /** 立马取消 （我们只需要签名即可） */
+    /** 当然你也可以写一个 JS 版本，然后通过 WebSocket 发送到后台去 */
+    xhr.abort();
+</script>
+</html>

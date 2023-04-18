@@ -70,9 +70,9 @@ public interface LiveRoomCallback {
      * DouYin
      */
     public interface DouYin {
-        public void onOpen();
-        public void onClose();
-        public void onError(Throwable throwable);
-        public void onMessage(List<club.p6e.live.room.platform.douyin.Message> messages);
+        public void onOpen(club.p6e.live.room.platform.douyin.Client client );
+        public void onClose(club.p6e.live.room.platform.douyin.Client client );
+        public void onError(club.p6e.live.room.platform.douyin.Client client, Throwable throwable);
+        public void onMessage(club.p6e.live.room.platform.douyin.Client client, List<club.p6e.live.room.platform.douyin.Message> messages);
     }
 }

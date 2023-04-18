@@ -1,109 +1,54 @@
 package club.p6e.live.room.platform.douyin;
 
+import club.p6e.live.room.LiveRoomApplication;
 import club.p6e.live.room.LiveRoomCallback;
 import club.p6e.live.room.LiveRoomCodec;
-import club.p6e.live.room.utils.HttpUtil;
-import club.p6e.live.room.utils.Utils;
+import club.p6e.websocket.client.P6eWebSocketCallback;
+import club.p6e.websocket.client.P6eWebSocketClient;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import org.apache.http.Header;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * @author lidashuang
  * @version 1.0
  */
-public class Handler {
+public class Handler implements P6eWebSocketCallback {
 
-    /**
-     * 处理器的回调函数对象
-     */
-    private interface Callback {
+    /** 日志对象 */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
-        /**
-         * 执行回调
-         * @param messages 消息对象
-         * @throws Exception 出现的异常
-         */
-        public void execute(List<Message> messages) throws Exception;
-    }
-
-    /** 分割符号 */
-    private static final String CHAR = "@@@";
-    private static final int EXT_INDEX = 5;
-
-    /** ID */
-    private final String id;
-    /** URL */
-    private final String url;
     /** RID */
     private final String rid;
+    /** 是否异步 */
+    private final boolean isAsync;
     /** 编码器 */
     private final LiveRoomCodec<Message> codec;
     /** 回调执行函数 */
     private final LiveRoomCallback.DouYin callback;
 
-    /** 当前请求的状态 */
-    private volatile String status = "";
+    /** 客户端 */
+    private Client clientDouYin;
+    /** 客户端增强器 */
+    private Client.Intensifier clientDouYinIntensifier;
+    /** 任务器 */
+    private LiveRoomApplication.Task task;
 
     /**
      * 构造方法初始化
-     * @param url 请求的 URL 模版
      * @param rid 房间 ID
-     * @param callback 回调函数
-     */
-    public Handler(String url, String rid, LiveRoomCallback.DouYin callback) {
-        this(url, rid, null, callback);
-    }
-
-    /**
-     * 构造方法初始化
-     * @param url 请求的 URL 模版
-     * @param rid 房间 ID
+     * @param isAsync 是否异步执行
      * @param codec 编解码器
      * @param callback 回调函数
      */
-    public Handler(String url, String rid, LiveRoomCodec<Message> codec, LiveRoomCallback.DouYin callback) {
-        this.id = Utils.generateUuid();
-        this.url = url;
+    public Handler(String rid, boolean isAsync, LiveRoomCodec<Message> codec, LiveRoomCallback.DouYin callback) {
         this.rid = rid;
+        this.isAsync = isAsync;
         this.codec = codec;
         this.callback = callback;
-    }
-
-    /**
-     * 连接服务
-     */
-    void connect() {
-        // 开始执行连接
-        try {
-            Signature.execute(this.id, new Signature.MessageCache(this.getTranslationUrl(),
-                    content -> task(content, messages -> {
-                        callback.onOpen();
-                        callback.onMessage(messages);
-                    })));
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.callback.onError(e);
-            this.shutdown();
-        }
-    }
-
-    /**
-     * 关闭服务
-     */
-    void shutdown() {
-        // 关闭服务
-        this.status = "-1";
-        this.callback.onClose();
     }
 
     /**
@@ -114,123 +59,177 @@ public class Handler {
         return rid;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getStatus() {
-        return status;
+    /**
+     * 是否异步执行
+     * @return 异步执行的状态
+     */
+    public boolean isAsync() {
+        return isAsync;
     }
 
     /**
-     * 获取 URL
-     * @return URL
+     * 设置客户端增强器
+     * @param intensifier 增强器对象
      */
-    public String getUrl() {
-        return url;
+    public void setClientIntensifier(Client.Intensifier intensifier) {
+        this.clientDouYinIntensifier = intensifier;
     }
 
     /**
-     * 获取译文请求地址
-     * @return 请求地址
+     * 连接成功的回调
+     * @param client WebSocket 客户端
      */
-    private String getTranslationUrl() {
-        return getTranslationUrl("", "0", "-1");
+    @Override
+    public void onOpen(P6eWebSocketClient client) {
+        System.out.println("xxxxxxxdddddddddyyyyyyy " + client);
+//        try {
+//            // 创建客户端对象
+//            this.clientDouYin = new Client(this.rid, this.codec, client);
+//            // 增强客户端对象
+//            if (this.clientDouYinIntensifier != null) {
+//                this.clientDouYin = this.clientDouYinIntensifier.enhance(this.clientDouYin);
+//            }
+//            // 发送登录的信息
+//            this.clientDouYin.sendLoginMessage();
+//            // 发送加入的组的信息
+//            this.clientDouYin.sendGroupMessage();
+//            // 发送接收全部礼物的信息
+//            this.clientDouYin.sendAllGiftMessage();
+//
+//            // 心跳任务创建
+//            // 心跳任务如果存在将关闭
+//            if (this.task != null) {
+//                final String tid = this.task.getId();
+//                LOGGER.warn("[ DouYin " + this.rid + " ] instance has a previous task [ " + tid + " ]!!");
+//                LOGGER.warn("[ DouYin " + this.rid + " ] now execute to close task [ " + tid + " ]...");
+//                LOGGER.info("[ DouYin: " + this.rid + " ] start closing task [ " + tid + " ].");
+//                this.task.close();
+//                this.task = null;
+//                LOGGER.info("[ DouYin: " + this.rid + " ] end closing task [ " + tid + " ].");
+//                LOGGER.warn("[ DouYin " + this.rid + " ] closing successful [ " + tid + " ].");
+//            }
+//            this.task = new LiveRoomApplication.Task(0, 45, true) {
+//                @Override
+//                public void execute() {
+//                    // 心跳
+//                    clientDouYin.sendPantMessage();
+//                }
+//            };
+//
+//            // 触发回调函数
+//            this.callback.onOpen(this.clientDouYin);
+//
+//            System.out.println("XXXXXXX");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            LOGGER.error("[ DouYin: " + this.rid + " ] onOpen ==> " + e.getMessage());
+//        }
     }
 
-    /**
-     * 获取译文请求地址
-     * @return 请求地址
-     */
-    private String getTranslationUrl(String ext, String cursor, String rtt) {
+    @Override
+    public void onClose(P6eWebSocketClient client) {
         try {
-            return Utils.translate(url,
-                    "rid", rid,
-                    "ext", URLEncoder.encode(ext, "UTF-8"),
-                    "cursor", URLEncoder.encode(cursor, "UTF-8"),
-                    "rtt", URLEncoder.encode(rtt, "UTF-8"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String msToken = "";
-
-    /**
-     * 执行任务
-     * @param url 签名后的请求路径
-     */
-    private void task(String url, Callback callback) {
-        try {
-            HttpUtil.http(new HttpGet(url), httpResponse -> {
-                final int statusCode = httpResponse.getStatusLine().getStatusCode();
-                final InputStream inputStream = httpResponse.getEntity().getContent();
-
-                final Header[] headers = httpResponse.getAllHeaders();
-                for (Header header : headers) {
-                    if ("set-cookie".equals(header.getName())) {
-                        final String v = header.getValue();
-                        for (String s : v.split(";")) {
-                            final String[] ss = s.trim().split("=");
-                            if ("msToken".equals(ss[0])) {
-                               if ("".equals(msToken)) {
-                                   msToken = ss[1];
-                               }
-                            }
-                        }
-                    }
-                }
-                System.out.println("ttt::: " + msToken);
-
-                // 读取流释放
-                try {
-                    // 如果成功就继续处理
-                    if (statusCode == HttpStatus.SC_OK) {
-                        final ByteBuf byteBuf = Unpooled.buffer();
-                        try {
-                            // 读取数据
-                            int i;
-                            while ((i = inputStream.read()) != -1) {
-                                byteBuf.writeByte(i);
-                            }
-
-                            // 解码得到消息列表
-                            final List<Message> messages = this.codec.decode(byteBuf);
-
-                            // 下一次任务
-                            nextTask(messages);
-
-                            // 处理器处理收到的消息
-                            if (callback != null) {
-                                callback.execute(messages);
-                            }
-                        } catch (Exception e) {
-                            throw new IOException(e);
-                        } finally {
-                            byteBuf.release();
-                        }
-                    }
-                } finally {
-                    inputStream.close();
-                }
-                return null;
-            }, null, null, null);
+            this.callback.onClose(this.clientDouYin);
         } catch (Exception e) {
             e.printStackTrace();
-            this.callback.onError(e);
-            this.shutdown();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onClose ==> " + e.getMessage());
+        } finally {
+            if (this.task == null) {
+                LOGGER.info("[ DouYin: " + this.rid + " ] no started task.");
+            } else {
+                final String tid = this.task.getId();
+                LOGGER.info("[ DouYin: " + this.rid + " ] start closing task [ " + tid + " ].");
+                this.task.close();
+                this.task = null;
+                LOGGER.info("[ DouYin: " + this.rid + " ] end closing task [ " + tid + " ].");
+            }
         }
     }
 
-    private void nextTask(List<Message> messages) throws IOException {
-        System.out.println(Utils.toJson(messages.get(0))  + "  " + Utils.toJson(messages.get(0).data()));
-        final long currentDateTime = System.currentTimeMillis();
-        final long rtt = currentDateTime % 1000;
-        final String ext = Utils.objectToString(messages.get(0).extend().get(EXT_INDEX));
-        final String[] extList = ext.split("\\|");
-        final String cursor = (extList.length >= 4 && extList[3] != null && extList[3].length() > 12) ? extList[3].substring(12) : "";
-        Signature.execute(this.id, new Signature.MessageCache((this.getTranslationUrl(
-                ext, cursor, String.valueOf(rtt)) + ("".equals(msToken) ? "" : ("&msToken=" + msToken)) + CHAR + currentDateTime), content -> this.task(content, this.callback::onMessage)));
+    @Override
+    public void onError(P6eWebSocketClient client, Throwable throwable) {
+        try {
+            this.callback.onError(this.clientDouYin, throwable);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onError ==> " + e.getMessage());
+        }
     }
 
+    @Override
+    public void onMessageText(P6eWebSocketClient client, ByteBuf byteBuf) {
+        try {
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessageText ==> "
+                    + new String(bytes, StandardCharsets.UTF_8)
+                    + ", message format is incorrect and will be discarded.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessageText ==> " + e.getMessage());
+        } finally {
+            byteBuf.release();
+        }
+    }
+
+    @Override
+    public void onMessageBinary(P6eWebSocketClient client, ByteBuf byteBuf) {
+        try {
+            // 解码得到消息对象
+            // 回调收到消息方法
+            System.out.println("--> " +   byteBuf.readableBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessageBinary ==> " + e.getMessage());
+        } finally {
+            byteBuf.release();
+        }
+    }
+
+    @Override
+    public void onMessagePong(P6eWebSocketClient client, ByteBuf byteBuf) {
+        try {
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessagePong ==> " + Arrays.toString(bytes)
+                    + ", message format is incorrect and will be discarded.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessagePong ==> " + e.getMessage());
+        } finally {
+            byteBuf.release();
+        }
+    }
+
+    @Override
+    public void onMessagePing(P6eWebSocketClient client, ByteBuf byteBuf) {
+        try {
+            // 回应 pong 的消息
+            client.sendMessagePong();
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.warn("[ DouYin: " + this.rid + " ] onMessagePing ==> " + Arrays.toString(bytes)
+                    + ", message format is incorrect and will be discarded.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessagePing ==> " + e.getMessage());
+        } finally {
+            byteBuf.release();
+        }
+    }
+
+    @Override
+    public void onMessageContinuation(P6eWebSocketClient client, ByteBuf byteBuf) {
+        try {
+            final byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
+            LOGGER.warn("[ DouYin: " + this.rid + " ] onMessageContinuation ==> " + Arrays.toString(bytes)
+                    + ", message format is incorrect and will be discarded.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("[ DouYin: " + this.rid + " ] onMessageContinuation ==> " + e.getMessage());
+        } finally {
+            byteBuf.release();
+        }
+    }
 }

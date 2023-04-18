@@ -75,6 +75,7 @@
         const xhr = new XMLHttpRequest()
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
+                console.log('xxx    ---  ' + xhr._url);
                 COUNT_NUM ++;
                 document.getElementById('count').innerText = String(COUNT_NUM);
 
@@ -90,6 +91,18 @@
         /** 当然你也可以写一个 JS 版本，然后通过 WebSocket 发送到后台去 */
         xhr.abort();
     }
+    // https://live.douyin.com/webcast/im/fetch/?aid=6383&live_id=1&device_platform=web&language=zh&room_id=7095272776312408839&resp_content_type=protobuf&version_code=9999&identity=audience&internal_ext=internal_src:dim%7Cwss_push_room_id:7095272776312408839%7Cwss_push_did:7084520324432152102%7Cdim_log_id:202205081652260101331261581D425B40%7Cfetch_time:1651999946743%7Cstart_time:0%7Cfetch_id:7095285736768839887%7Cseq:9%7Cnext_cursor:1651999946743_7095285741063807190_1_1%7Cdoor:5-n45%7Cwss_info:0-0-0-0&cursor=1651999946743_7095285741063807190_1_1&last_rtt=229&did_rule=3&msToken=MdFMXnSDiNGAdOFkOZZr-1C5D_pUmhvo1q6OJSVbfkHWpCT3zhmY_y54oYpN1SYaR6TE548qkbfEA7cLPhLiTDi4RYJqABLN0RngZXhhgJwZtbB39dqelOo=&X-Bogus=DFSzsdVLPbtANGIFSW0DTQKMtapx
+		//
+		// &_signature=_02B4Z6wo00001EgPsAAAAIDBtkPMMbkgKxRIC7SAAHB74TACzJgYlK.PQplSHvxVKDFyG2snW5Bv5h4Q1lJWHdg0KS5d2apw-ioiFXhiI5sSMREVP2tg9okvJdIlQh8Png6WckAKWbWtSnwq1a
+    // https://live.douyin.com/webcast/im/fetch/?aid=6383&live_id=1&device_platform=web&language=zh&room_id=7095272776312408839&resp_content_type=protobuf&version_code=9999&identity=audience&internal_ext=internal_src:dim%7Cwss_push_room_id:7095272776312408839%7Cwss_push_did:7084520324432152102%7Cdim_log_id:202205081652260101331261581D425B40%7Cfetch_time:1651999946743%7Cstart_time:0%7Cfetch_id:7095285736768839887%7Cseq:9%7Cnext_cursor:1651999946743_7095285741063807190_1_1%7Cdoor:5-n45%7Cwss_info:0-0-0-0&cursor=1651999946743_7095285741063807190_1_1&last_rtt=229&did_rule=3&msToken=MdFMXnSDiNGAdOFkOZZr-1C5D_pUmhvo1q6OJSVbfkHWpCT3zhmY_y54oYpN1SYaR6TE548qkbfEA7cLPhLiTDi4RYJqABLN0RngZXhhgJwZtbB39dqelOo=&X-Bogus=DFSzsdVLPbtANGIFSW0DTQKMtapx&_signature=_02B4Z6wo00f01GIxPgQAAIDBnH1CNd5dVIRiPTqAAHsDAmXLbQauDTYYG0Hjad6JKyE9.ZwXr6RVxYFYpHLo-d0lkjBL0RJQYQA2M.fyBpuEL8SHJikqsPwNCF-00GM7XSUbR1vkhi6OSxgJ24
+
+
+		// https://live.douyin.com/webcast/im/fetch/?aid=6383&live_id=1&device_platform=web&language=zh&room_id=7095272776312408839&resp_content_type=protobuf&version_code=9999&identity=audience&internal_ext=internal_src:dim%7Cwss_push_room_id:7095272776312408839%7Cwss_push_did:7084520324432152102%7Cdim_log_id:202205081652260101331261581D425B40%7Cfetch_time:1651999946743%7Cstart_time:0%7Cfetch_id:7095285736768839887%7Cseq:9%7Cnext_cursor:1651999946743_7095285741063807190_1_1%7Cdoor:5-n45%7Cwss_info:0-0-0-0&cursor=1651999946743_7095285741063807190_1_1&last_rtt=229&did_rule=3&msToken=MdFMXnSDiNGAdOFkOZZr-1C5D_pUmhvo1q6OJSVbfkHWpCT3zhmY_y54oYpN1SYaR6TE548qkbfEA7cLPhLiTDi4RYJqABLN0RngZXhhgJwZtbB39dqelOo=&X-Bogus=DFSzsdVLPbtANGIFSW0DTQKMtapx&_signature=
+		//
+		//
+		// _02B4Z6wo00f01VUtG7QAAIDAq2FnhqgANA1VIR8AADdA4P5sA.MFmlwEwFDfO8KAFHfnaVWckyr4vCqLEothAZ41dJ9WeGtjEMd57Va0VtK08ValjX8fOzUnR7TDnFX9ws9i2YIXxXc6GQ3Rff
+
+		signature('@', 'https://live.douyin.com/webcast/im/fetch/?aid=6383&live_id=1&device_platform=web&language=zh&room_id=7095272776312408839&resp_content_type=protobuf&version_code=9999&identity=audience&internal_ext=internal_src:dim%7Cwss_push_room_id:7095272776312408839%7Cwss_push_did:7084520324432152102%7Cdim_log_id:202205081652260101331261581D425B40%7Cfetch_time:1651999946743%7Cstart_time:0%7Cfetch_id:7095285736768839887%7Cseq:9%7Cnext_cursor:1651999946743_7095285741063807190_1_1%7Cdoor:5-n45%7Cwss_info:0-0-0-0&cursor=1651999946743_7095285741063807190_1_1&last_rtt=229&did_rule=3&msToken=MdFMXnSDiNGAdOFkOZZr-1C5D_pUmhvo1q6OJSVbfkHWpCT3zhmY_y54oYpN1SYaR6TE548qkbfEA7cLPhLiTDi4RYJqABLN0RngZXhhgJwZtbB39dqelOo=&X-Bogus=DFSzsdVLPbtANGIFSW0DTQKMtapx');
 </script>
 <script type="text/javascript">
     /** 连接 WebSocket 对象 */
