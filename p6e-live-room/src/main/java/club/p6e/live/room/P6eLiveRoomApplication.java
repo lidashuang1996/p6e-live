@@ -17,9 +17,9 @@ public class P6eLiveRoomApplication {
         application.connect();
     }
 
-//    public static void createBiLiBiLiLiveRoom(club.p6e.live.room.platform.bilibili.Application application) {
-//        application.connect();
-//    }
+    public static void createBiLiBiLiLiveRoom(club.p6e.live.room.platform.bilibili.Application application) {
+        application.connect();
+    }
 //
 //    public static void createHuYaLiveRoom(club.p6e.live.room.platform.huya.Application application) {
 //        application.connect();
