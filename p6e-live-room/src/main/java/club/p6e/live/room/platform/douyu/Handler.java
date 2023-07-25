@@ -16,7 +16,7 @@ import java.util.Arrays;
  * 斗鱼: https://www.douyu.com/
  * 开源项目地址: http://live.p6e.club/
  * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
- *
+ * <p>
  * 斗鱼连接处理器对象
  *
  * @author lidashuang
@@ -24,28 +24,45 @@ import java.util.Arrays;
  */
 public class Handler implements P6eWebSocketCallback {
 
-    /** 日志对象 */
+    /**
+     * 日志对象
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
-    /** RID */
+    /**
+     * RID
+     */
     private final String rid;
-    /** 是否异步 */
+    /**
+     * 是否异步
+     */
     private final boolean isAsync;
-    /** 编码器 */
+    /**
+     * 编码器
+     */
     private final LiveRoomCodec<Message> codec;
-    /** 回调执行函数 */
+    /**
+     * 回调执行函数
+     */
     private final LiveRoomCallback.DouYu callback;
 
-    /** 客户端 */
+    /**
+     * 客户端
+     */
     private Client clientDouYu;
-    /** 客户端增强器 */
+    /**
+     * 客户端增强器
+     */
     private Client.Intensifier clientDouYuIntensifier;
-    /** 任务器 */
+    /**
+     * 任务器
+     */
     private LiveRoomApplication.Task task;
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
+     *
+     * @param rid      房间 ID
      * @param callback 回调函数
      */
     public Handler(String rid, LiveRoomCallback.DouYu callback) {
@@ -54,8 +71,9 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
-     * @param isAsync 是否异步执行
+     *
+     * @param rid      房间 ID
+     * @param isAsync  是否异步执行
      * @param callback 回调函数
      */
     public Handler(String rid, boolean isAsync, LiveRoomCallback.DouYu callback) {
@@ -64,8 +82,9 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
-     * @param codec 编解码器
+     *
+     * @param rid      房间 ID
+     * @param codec    编解码器
      * @param callback 回调函数
      */
     public Handler(String rid, LiveRoomCodec<Message> codec, LiveRoomCallback.DouYu callback) {
@@ -74,9 +93,10 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 构造方法初始化
-     * @param rid 房间 ID
-     * @param isAsync 是否异步执行
-     * @param codec 编解码器
+     *
+     * @param rid      房间 ID
+     * @param isAsync  是否异步执行
+     * @param codec    编解码器
      * @param callback 回调函数
      */
     public Handler(String rid, boolean isAsync, LiveRoomCodec<Message> codec, LiveRoomCallback.DouYu callback) {
@@ -88,6 +108,7 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 获取 RID
+     *
      * @return RID
      */
     public String getRid() {
@@ -96,6 +117,7 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 是否异步执行
+     *
      * @return 异步执行的状态
      */
     public boolean isAsync() {
@@ -104,6 +126,7 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 设置客户端增强器
+     *
      * @param intensifier 增强器对象
      */
     public void setClientIntensifier(Client.Intensifier intensifier) {
@@ -112,6 +135,7 @@ public class Handler implements P6eWebSocketCallback {
 
     /**
      * 连接成功的回调
+     *
      * @param client WebSocket 客户端
      */
     @Override
@@ -127,6 +151,7 @@ public class Handler implements P6eWebSocketCallback {
             this.clientDouYu.sendLoginMessage();
             // 发送加入的组的信息
             this.clientDouYu.sendGroupMessage();
+            this.clientDouYu.sendSubMessage();
             // 发送接收全部礼物的信息
             this.clientDouYu.sendAllGiftMessage();
 
@@ -152,8 +177,6 @@ public class Handler implements P6eWebSocketCallback {
 
             // 触发回调函数
             this.callback.onOpen(this.clientDouYu);
-
-            System.out.println("XXXXXXX");
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ DouYu: " + this.rid + " ] onOpen ==> " + e.getMessage());
@@ -211,7 +234,6 @@ public class Handler implements P6eWebSocketCallback {
         try {
             // 解码得到消息对象
             // 回调收到消息方法
-            System.out.println("--> " +   byteBuf.readableBytes());
             this.callback.onMessage(this.clientDouYu, this.codec.decode(byteBuf));
         } catch (Exception e) {
             e.printStackTrace();

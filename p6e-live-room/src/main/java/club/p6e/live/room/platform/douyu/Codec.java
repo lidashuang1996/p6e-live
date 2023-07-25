@@ -1,11 +1,14 @@
 package club.p6e.live.room.platform.douyu;
 
 import club.p6e.live.room.LiveRoomCodec;
+import club.p6e.live.room.utils.Utils;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +88,6 @@ public class Codec extends LiveRoomCodec<Message> {
         try {
             while (byteBuf.isReadable()) {
                 if (byteBuf.readableBytes() > CONTENT_LENGTH_HEADER_BYTE_LENGTH) {
-                    // 消息总长度
                     final int len1 = byteBuf.readIntLE();
                     if (len1 > HEADER_LENGTH && byteBuf.readableBytes() >= len1) {
                         // 消息总长度
@@ -102,21 +104,25 @@ public class Codec extends LiveRoomCodec<Message> {
                             message.setLength(len1);
                             result.add(message);
                         } else {
+                            byteBuf.readerIndex(byteBuf.readableBytes());
                             LOGGER.error("[ DouYu ] " + "check data abnormal, entire message is discarded !!");
-                            throw new IOException("[ DouYu ] " + "check data abnormal, entire message is discarded !!");
+                            break;
                         }
                     } else {
+                        byteBuf.readerIndex(byteBuf.readableBytes());
                         LOGGER.error("[ DouYu ] " + "unread length is less than content length, entire message is discarded !!");
-                        throw new IOException("[ DouYu ] " + "unread length is less than content length, entire message is discarded !!");
+                        break;
                     }
                 } else {
+                    byteBuf.readerIndex(byteBuf.readableBytes());
                     LOGGER.error("[ DouYu ] unread data content length is " + "less than the header bytecode content length, entire message is discarded !!");
-                    throw new IOException("[ DouYu ] unread data content length is " + "less than the header bytecode content length, entire message is discarded !!");
+                    break;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("[ DouYu ] decode error ==> " + e.getMessage());
+            throw new RuntimeException(e);
         }
         return result;
     }

@@ -3,6 +3,7 @@ package club.p6e.live.room;
 import club.p6e.live.room.platform.douyu.Application;
 import club.p6e.live.room.platform.douyu.Client;
 import club.p6e.live.room.platform.douyu.Message;
+import club.p6e.live.room.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -140,9 +141,9 @@ public class P6eFileApplication {
     public static final String GIFT_ALL_TYPE = "dmfbdres";
 
     public static void main(String[] args) {
-//        SpringApplication.run(P6eFileApplication.class, args);
+        SpringApplication.run(P6eFileApplication.class, args);
         P6eLiveRoomApplication.init();
-        P6eLiveRoomApplication.createDouYuLiveRoom(new Application("182102", new LiveRoomCallback.DouYu() {
+        P6eLiveRoomApplication.createDouYuLiveRoom(new Application("101", new LiveRoomCallback.DouYu() {
             @Override
             public void onOpen(Client client) {
 
@@ -182,6 +183,8 @@ public class P6eFileApplication {
                             || USER_UPGRADE_TYPE.equals(type)
                     )) {
                         LOGGER.info(map.toString());
+                    } else {
+                        System.out.println(map.get("type"));
                     }
                 }
             }
