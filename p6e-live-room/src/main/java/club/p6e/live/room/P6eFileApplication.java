@@ -1,16 +1,12 @@
 package club.p6e.live.room;
 
-import club.p6e.live.room.platform.douyu.Application;
-import club.p6e.live.room.platform.douyu.Client;
-import club.p6e.live.room.platform.douyu.Message;
-import club.p6e.live.room.utils.Utils;
+import club.p6e.live.room.platform.bilibili.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.List;
-import java.util.Map;
 
 @SpringBootApplication
 public class P6eFileApplication {
@@ -140,54 +136,83 @@ public class P6eFileApplication {
      */
     public static final String GIFT_ALL_TYPE = "dmfbdres";
 
+//    public static void main(String[] args) {
+////        SpringApplication.run(P6eFileApplication.class, args);
+//        P6eLiveRoomApplication.init();
+//        P6eLiveRoomApplication.createDouYuLiveRoom(new Application("182102", new LiveRoomCallback.DouYu() {
+//            @Override
+//            public void onOpen(Client client) {
+//
+//            }
+//
+//            @Override
+//            public void onClose(Client client) {
+//
+//            }
+//
+//            @Override
+//            public void onError(Client client, Throwable throwable) {
+//
+//            }
+//
+//            @Override
+//            public void onMessage(Client client, List<Message> messages) {
+//                for (final Message message : messages) {
+//                    final Map<String, Object> map = ((Map) message.data());
+//                    final String type = map.get("type") == null ? null : String.valueOf(map.get("type"));
+//                    if (!(BARRAGE_TYPE.equals(type)
+//                            || GIFT_TYPE.equals(type)
+//                            || BADGE_UPGRADE_TYPE.equals(type)
+//                            || NO_TALKING.equals(type)
+//                            || ENTER_ROOM_TYPE.equals(type)
+//                            || FANS_RANKING_TYPE.equals(type)
+//                            || ANCHOR_LEAVE_TYPE.equals(type)
+//                            || ANCHOR_BACK_TYPE.equals(type)
+//                            || RANK_RANKING_TYPE.equals(type)
+//                            || NOBLE_RANKING_TYPE.equals(type)
+//                            || SHARE_TYPE.equals(type)
+//                            || COURSE_RANKING_TYPE.equals(type)
+//                            || BROADCAST_RANKING_TYPE.equals(type)
+//                            || ANCHOR_RANK_RAISE_TYPE.equals(type)
+//                            || ANCHOR_SWITCH_TYPE.equals(type)
+//                            || TOP_10_RANKING_TYPE.equals(type)
+//                            || USER_UPGRADE_TYPE.equals(type)
+//                    )) {
+//                        LOGGER.info(map.toString());
+//                    }
+//                }
+//            }
+//        }));
+//    }
+
     public static void main(String[] args) {
         SpringApplication.run(P6eFileApplication.class, args);
         P6eLiveRoomApplication.init();
-        P6eLiveRoomApplication.createDouYuLiveRoom(new Application("101", new LiveRoomCallback.DouYu() {
-            @Override
-            public void onOpen(Client client) {
+        P6eLiveRoomApplication.createBiLiBiLiLiveRoom(new club.p6e.live.room.platform.bilibili.Application(
+                "12265",
+                new club.p6e.live.room.LiveRoomCallback.BiLiBiLi() {
+                    @Override
+                    public void onOpen(club.p6e.live.room.platform.bilibili.Client client) {
 
-            }
+                    }
 
-            @Override
-            public void onClose(Client client) {
+                    @Override
+                    public void onClose(club.p6e.live.room.platform.bilibili.Client client) {
 
-            }
+                    }
 
-            @Override
-            public void onError(Client client, Throwable throwable) {
+                    @Override
+                    public void onError(club.p6e.live.room.platform.bilibili.Client client, Throwable throwable) {
 
-            }
+                    }
 
-            @Override
-            public void onMessage(Client client, List<Message> messages) {
-                for (final Message message : messages) {
-                    final Map<String, Object> map = ((Map) message.data());
-                    final String type = map.get("type") == null ? null : String.valueOf(map.get("type"));
-                    if (!(BARRAGE_TYPE.equals(type)
-                            || GIFT_TYPE.equals(type)
-                            || BADGE_UPGRADE_TYPE.equals(type)
-                            || NO_TALKING.equals(type)
-                            || ENTER_ROOM_TYPE.equals(type)
-                            || FANS_RANKING_TYPE.equals(type)
-                            || ANCHOR_LEAVE_TYPE.equals(type)
-                            || ANCHOR_BACK_TYPE.equals(type)
-                            || RANK_RANKING_TYPE.equals(type)
-                            || NOBLE_RANKING_TYPE.equals(type)
-                            || SHARE_TYPE.equals(type)
-                            || COURSE_RANKING_TYPE.equals(type)
-                            || BROADCAST_RANKING_TYPE.equals(type)
-                            || ANCHOR_RANK_RAISE_TYPE.equals(type)
-                            || ANCHOR_SWITCH_TYPE.equals(type)
-                            || TOP_10_RANKING_TYPE.equals(type)
-                            || USER_UPGRADE_TYPE.equals(type)
-                    )) {
-                        LOGGER.info(map.toString());
-                    } else {
-                        System.out.println(map.get("type"));
+                    @Override
+                    public void onMessage(club.p6e.live.room.platform.bilibili.Client client, List<club.p6e.live.room.platform.bilibili.Message> messages) {
+                        for (Message message : messages) {
+                            System.out.println(message + "  " + message.data());
+                        }
                     }
                 }
-            }
-        }));
+        ));
     }
 }

@@ -76,13 +76,14 @@ public class Client {
     public void sendLoginMessage() {
         final Message message = new Message();
         message.put("uid", 0);
+        message.put("roomid", Integer.valueOf(rid));
+        // protover 采用是 3
+        // protover 最新的版本是 2/3
+        message.put("protover", 3);
+        message.put("buvid", "CE60857A-F096-488C-A010-F4318439D8A4167613infoc");
+        message.put("platform", "web");
         message.put("type", 2);
         message.put("key", token);
-        // protover 采用是 2
-        // protover 最新的版本是 3
-        message.put("protover", 2);
-        message.put("platform", "web");
-        message.put("roomid", Integer.valueOf(rid));
         message.setSpare(1);
         message.setType(LOGIN_MESSAGE_TYPE);
         message.setAgreement(LOGIN_AGREEMENT_TYPE);
