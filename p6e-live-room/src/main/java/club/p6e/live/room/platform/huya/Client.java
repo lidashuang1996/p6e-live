@@ -3,14 +3,14 @@ package club.p6e.live.room.platform.huya;
 import club.p6e.live.room.LiveRoomCodec;
 import club.p6e.websocket.client.P6eWebSocketClient;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.security.MessageDigest;
+import java.util.*;
 
 /**
  * 虎牙: https://www.huya.com/
  * 开源项目地址: http://live.p6e.club/
  * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
- *
+ * <p>
  * 虎牙客户端
  *
  * @author lidashuang
@@ -22,7 +22,7 @@ public class Client {
      * 虎牙: https://www.huya.com/
      * 开源项目地址: http://live.p6e.club/
      * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
-     *
+     * <p>
      * 虎牙客户端增强器
      *
      * @author lidashuang
@@ -31,22 +31,30 @@ public class Client {
     public interface Intensifier {
         /**
          * 增强原本的客户端对象
+         *
          * @param client 客户端对象
          * @return 客户端对象
          */
         public Client enhance(Client client);
     }
 
-    /** RID */
+    /**
+     * RID
+     */
     private final String liveChannelId;
-    /** 编解码器 */
+    /**
+     * 编解码器
+     */
     private final LiveRoomCodec<Message> codec;
-    /** 客户端 */
+    /**
+     * 客户端
+     */
     private final P6eWebSocketClient p6eWebSocketClient;
 
     /**
      * 构造方法初始化
-     * @param liveChannelId LiveChannelId
+     *
+     * @param liveChannelId      LiveChannelId
      * @param p6eWebSocketClient WebSocket 客户端对象
      */
     public Client(String liveChannelId, LiveRoomCodec<Message> codec, P6eWebSocketClient p6eWebSocketClient) {
@@ -64,6 +72,7 @@ public class Client {
 
     /**
      * 获取源的客户端对象
+     *
      * @return 源的客户端对象
      */
     public P6eWebSocketClient getP6eWebSocketClient() {
@@ -75,187 +84,111 @@ public class Client {
      * 6501 礼物
      * 1400 弹幕
      */
-    public void sendInitMessage() {
-        final Template<BarrageEventTemplate> template = new Template<>();
-        template.setType(16);
-        template.setData(new BarrageEventTemplate(this.liveChannelId, this.liveChannelId));
+    @SuppressWarnings("ALL")
+    public void sendLoginMessage() {
+        final Map<String, Object> req = new HashMap<>(16);
+        final Properties d = new Properties();
+        final Properties d1 = new Properties();
+        final Properties dr = new Properties();
+        final Properties p1 = new Properties();
+        final Properties p2 = new Properties();
+        final Properties p3 = new Properties();
+        p1.put("0", p2);
+        p2.put("0", p3);
+        p2.put("1", Void.TYPE);
+        p2.put("2", Void.TYPE);
+        p2.put("3", System.currentTimeMillis() - 16 * 3600 * 24 * 1000 * 365L);
+        p2.put("4", "index/jdt/3");
+        p2.put("5", "");
+        p2.put("6", Void.TYPE);
+        p2.put("7", Void.TYPE);
+        p2.put("8", 1);
+        p3.put("0", Void.TYPE);
+        p3.put("1", "0adbb0c67a58a56545010ccc0dcc43ef");
+        p3.put("2", "");
+        p3.put("3", "webh5&2401311422&websocket");
+        p3.put("4", "__yamid_new=CA9769471F1000017F4318F21EC0D880; game_did=fNdCvIVYyvFWUSbvXgDpZmwuK7DgrhXa7bk; __yamid_tt1=0.15956466044732132; guid=0adbb0c67a58a56545010ccc0dcc43ef; sdidshorttest=test; SoundValue=0.50; alphaValue=0.80; udb_guiddata=000593572de04b0bbad7fc9e05aa7406; guid=0adbb0c67a58a56545010ccc0dcc43ef; udb_deviceid=w_799429769157591040; udb_passdata=3; __yasmid=0.15956466044732132; Hm_lvt_51700b6c722f5bb4cf39906a596ea41f=1706436916,1706794702,1706801801,1707380070; _yasids=__rootsid%3DCA9F07B34B5000015AB213F058801EB7; huya_hd_rep_cnt=11; sdid=0UnHUgv0_qmfD4KAKlwzhqcfkLXakcmA4IGeJ2PRisbeaKfx-qgQ1X1ugt2iKp3kHr9sQRB25VJcZ38T7QIVx7U-H6d8Z-_Jo-whLYY_hqhvWVkn9LtfFJw_Qo4kgKr8OZHDqNnuwg612sGyflFn1dmS1k3FIplGiuRBo7OiPL6ZqWGV9yZDNxrzqJHxSRC3i; sdidtest=0UnHUgv0_qmfD4KAKlwzhqcfkLXakcmA4IGeJ2PRisbeaKfx-qgQ1X1ugt2iKp3kHr9sQRB25VJcZ38T7QIVx7U-H6d8Z-_Jo-whLYY_hqhvWVkn9LtfFJw_Qo4kgKr8OZHDqNnuwg612sGyflFn1dmS1k3FIplGiuRBo7OiPL6ZqWGV9yZDNxrzqJHxSRC3i; _rep_cnt=6; Hm_lpvt_51700b6c722f5bb4cf39906a596ea41f=1707398563; isInLiveRoom=true; huya_flash_rep_cnt=42; huya_web_rep_cnt=173; huya_ua=webh5&0.1.0&websocket");
+        p3.put("5", Void.TYPE);
+        p3.put("6", "chrome");
+        req.put("tReq", p1);
+        dr.put("0", req);
+        d1.put("1", 3);
+        d1.put("2", Void.TYPE);
+        d1.put("3", Void.TYPE);
+        d1.put("4", 1);
+        d1.put("5", "huyaliveui");
+        d1.put("6", "getLivingInfo");
+        d1.put("7", dr);
+        d1.put("8", Void.TYPE);
+        d1.put("9", new HashMap<>(0));
+        d1.put("10", new HashMap<>(0));
+        final String d3 = execute1();
+        final byte[] bytes = new Taf.Encoder(d1).execute();
+        final int length = bytes.length + 4;
+        final byte[] result = new byte[length];
+        result[0] = (byte) ((length >> 24) & 0xFF);
+        result[1] = (byte) ((length >> 16) & 0xFF);
+        result[2] = (byte) ((length >> 8) & 0xFF);
+        result[3] = (byte) (length & 0xFF);
+        System.arraycopy(bytes, 0, result, 4, bytes.length);
+        d.put("0", 3);
+        d.put("1", d1);
+        d.put("2", Void.TYPE);
+        d.put("3", d3 + ":" + d3 + ":0:0");
+        d.put("4", Void.TYPE);
+        d.put("5", Void.TYPE);
+        d.put("6", execute2(result));
         final Message message = new Message();
-        message.setData(template.toList());
+        message.setData(d);
         this.sendMessage(message);
     }
 
-    /**
-     * 发送监听房间的初始化消息
-     * 6501 礼物
-     * 1400 弹幕
-     */
-    public void sendPantMessage() {
-        final Template<List<Object>> template = new Template<>();
-        template.setType(16);
-        template.setData(new UserHeartBeatDataTemplate().toList());
+    public void sendDataMessage() {
+        final Properties d = new Properties();
+        final Properties d1 = new Properties();
+        final List<String> list = new ArrayList<>();
+        list.add("live:" + liveChannelId);
+        list.add("chat:" + liveChannelId);
+        d1.put("0", list);
+        d1.put("1", "");
+        d.put("0", 16);
+        d.put("1", d1);
+        d.put("2", 1);
+        d.put("3", "");
+        d.put("4", Void.TYPE);
+        d.put("5", Void.TYPE);
+        d.put("6", "");
         final Message message = new Message();
-        message.setData(template.toList());
+        message.setData(d);
+        message.put("$IS_LENGTH_MARK", false);
         this.sendMessage(message);
     }
 
-    /**
-     * 虎牙的发送消息模版
-     * @param <T> 内容的类型
-     */
-    @SuppressWarnings("all")
-    public static class Template<T> {
-        private int type = 3;
-        private T data;
-        private Object unknown2;
-        private String unknown3 = "";
-        private Object unknown4;
-        private Object unknown5;
-        private String unknown6 = "";
 
-        public Template() {}
+    @SuppressWarnings("ALL")
+    private String execute1() {
+        return UUID.randomUUID().toString()
+                .replaceAll("-", "").substring(0, 16);
+    }
 
-        public Template(T data) {
-            this.data = data;
-        }
-
-        public Template(int type, T data) {
-            this.type = type;
-            this.data = data;
-        }
-
-        public int getType() {
-            return type;
-        }
-
-        public void setType(int type) {
-            this.type = type;
-        }
-
-        public T getData() {
-            return data;
-        }
-
-        public void setData(T data) {
-            this.data = data;
-        }
-
-        public Object getUnknown2() {
-            return unknown2;
-        }
-
-        public void setUnknown2(Object unknown2) {
-            this.unknown2 = unknown2;
-        }
-
-        public String getUnknown3() {
-            return unknown3;
-        }
-
-        public void setUnknown3(String unknown3) {
-            this.unknown3 = unknown3;
-        }
-
-        public Object getUnknown4() {
-            return unknown4;
-        }
-
-        public void setUnknown4(Object unknown4) {
-            this.unknown4 = unknown4;
-        }
-
-        public Object getUnknown5() {
-            return unknown5;
-        }
-
-        public void setUnknown5(Object unknown5) {
-            this.unknown5 = unknown5;
-        }
-
-        public String getUnknown6() {
-            return unknown6;
-        }
-
-        public void setUnknown6(String unknown6) {
-            this.unknown6 = unknown6;
-        }
-
-        public List<Object> toList() {
-            final List<Object> list = new ArrayList<>();
-            list.add(type);
-            list.add(data);
-            list.add(unknown2);
-            list.add(unknown3);
-            list.add(unknown4);
-            list.add(unknown5);
-            list.add(unknown6);
-            return list;
+    @SuppressWarnings("ALL")
+    private String execute2(byte[] bytes) {
+        try {
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            final byte[] result = md.digest(bytes);
+            final StringBuilder sb = new StringBuilder();
+            for (final byte r : result) {
+                final String hex = Integer.toHexString(0xFF & r);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
     }
 
-    /**
-     * 房间消息模版
-     */
-    public static class BarrageEventTemplate {
-        private List<String> list;
-        private String unknown1 = "";
-
-        public BarrageEventTemplate() {}
-
-        public BarrageEventTemplate(String liveId, String chatId) {
-            final List<String> list = new ArrayList<>();
-            list.add("live:" + liveId);
-            list.add("chat:" + chatId);
-            this.list = list;
-        }
-
-        public List<String> getList() {
-            return list;
-        }
-
-        public void setList(List<String> list) {
-            this.list = list;
-        }
-
-        public String getUnknown1() {
-            return unknown1;
-        }
-
-        public void setUnknown1(String unknown1) {
-            this.unknown1 = unknown1;
-        }
-    }
-
-
-    @SuppressWarnings("all")
-    public static class UserHeartBeatDataTemplate {
-        private Integer unknown1 = 3;
-        private Object unknown2;
-        private Object unknown3;
-        private Integer unknown4 = 6;
-        private String unknown5 = "onlineui";
-        private String unknown6 = "OnUserHeartBeat";
-        private Object unknown7;
-        private Object unknown8;
-        private Object unknown9;
-        private Object unknown10;
-
-        public UserHeartBeatDataTemplate() {
-            
-        }
-
-        public List<Object> toList() {
-            final List<Object> list = new ArrayList<>();
-            list.add(unknown1);
-            list.add(unknown2);
-            list.add(unknown3);
-            list.add(unknown4);
-            list.add(unknown5);
-            list.add(unknown6);
-            list.add(unknown7);
-            list.add(unknown8);
-            list.add(unknown9);
-            list.add(unknown10);
-            return list;
-        }
-    }
 }

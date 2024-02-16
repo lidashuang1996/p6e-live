@@ -1,6 +1,8 @@
 package club.p6e.live.room;
 
-import club.p6e.live.room.platform.bilibili.Message;
+import club.p6e.live.room.platform.huya.Application;
+import club.p6e.live.room.platform.huya.Client;
+import club.p6e.live.room.platform.huya.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -185,34 +187,65 @@ public class P6eFileApplication {
 //        }));
 //    }
 
-    public static void main(String[] args) {
-        SpringApplication.run(P6eFileApplication.class, args);
-        P6eLiveRoomApplication.init();
-        P6eLiveRoomApplication.createBiLiBiLiLiveRoom(new club.p6e.live.room.platform.bilibili.Application(
-                "12265",
-                new club.p6e.live.room.LiveRoomCallback.BiLiBiLi() {
-                    @Override
-                    public void onOpen(club.p6e.live.room.platform.bilibili.Client client) {
-
-                    }
-
-                    @Override
-                    public void onClose(club.p6e.live.room.platform.bilibili.Client client) {
-
-                    }
-
-                    @Override
-                    public void onError(club.p6e.live.room.platform.bilibili.Client client, Throwable throwable) {
-
-                    }
-
-                    @Override
-                    public void onMessage(club.p6e.live.room.platform.bilibili.Client client, List<club.p6e.live.room.platform.bilibili.Message> messages) {
-                        for (Message message : messages) {
-                            System.out.println(message + "  " + message.data());
-                        }
-                    }
-                }
-        ));
-    }
+//    public static void main(String[] args) {
+//        SpringApplication.run(P6eFileApplication.class, args);
+//        P6eLiveRoomApplication.init();
+//        P6eLiveRoomApplication.createBiLiBiLiLiveRoom(new club.p6e.live.room.platform.bilibili.Application(
+//                "30356614",
+//                new club.p6e.live.room.LiveRoomCallback.BiLiBiLi() {
+//                    @Override
+//                    public void onOpen(club.p6e.live.room.platform.bilibili.Client client) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onClose(club.p6e.live.room.platform.bilibili.Client client) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(club.p6e.live.room.platform.bilibili.Client client, Throwable throwable) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onMessage(club.p6e.live.room.platform.bilibili.Client client, List<club.p6e.live.room.platform.bilibili.Message> messages) {
+//                        for (Message message : messages) {
+//                            System.out.println(message + "  " + message.data());
+//                        }
+//                    }
+//                }
+//        ));
+//    }
+//    public static void main(String[] args) {
+//        SpringApplication.run(P6eFileApplication.class, args);
+//        P6eLiveRoomApplication.init();
+//        P6eLiveRoomApplication.createHuYaLiveRoom(new club.p6e.live.room.platform.huya.Application(
+//                "baozha",
+//                new LiveRoomCallback.HuYa() {
+//
+//                    @Override
+//                    public void onOpen(Client client) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onClose(Client client) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(Client client, Throwable throwable) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onMessage(Client client, List<Message> messages) {
+//                        for (Message message : messages) {
+//                            System.out.println(message.data());
+//                        }
+//                    }
+//                }
+//        ));
+//    }
 }

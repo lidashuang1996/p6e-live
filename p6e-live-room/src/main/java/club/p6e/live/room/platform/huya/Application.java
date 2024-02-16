@@ -9,11 +9,14 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * 虎牙: https://www.huya.com/
  * 开源项目地址: http://live.p6e.club/
  * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
- *
+ * <p>
  * 虎牙应用
  *
  * @author lidashuang
@@ -21,26 +24,39 @@ import org.slf4j.LoggerFactory;
  */
 public class Application extends LiveRoomApplication {
 
-    /** 注入日志对象 */
+    /**
+     * 注入日志对象
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
-    /** 默认的 WebSocket URL 地址 */
+    /**
+     * 默认的 WebSocket URL 地址
+     */
     private static final String DEFAULT_WEB_SOCKET_URL = "wss://cdnws.api.huya.com/";
-    /** 默认的虎牙房间地址前缀 */
+    /**
+     * 默认的虎牙房间地址前缀
+     */
     private static final String DEFAULT_HTTP_PREFIX = "http://www.huya.com/";
     private static final String DEFAULT_HTTPS_PREFIX = "https://www.huya.com/";
 
     private static LiveRoomCodec<Message> CODEC = null;
 
-    /** URL */
+    /**
+     * URL
+     */
     private final String url;
-    /** 处理器对象 */
+    /**
+     * 处理器对象
+     */
     private final Handler handler;
 
-    /** WebSocketClient 对象 */
+    /**
+     * WebSocketClient 对象
+     */
     private Channel channel;
 
     /**
      * 读取编解码器
+     *
      * @return 编解码器
      */
     public static LiveRoomCodec<Message> getCodec() {
@@ -62,95 +78,54 @@ public class Application extends LiveRoomApplication {
 
     /**
      * 通过房间的 URL 获取 LiveChannelId 数据
+     *
      * @return LiveChannelId 数据
      */
     public static String getLiveChannelId(String url) {
-        if (url.startsWith(DEFAULT_HTTP_PREFIX) || url.startsWith(DEFAULT_HTTPS_PREFIX)) {
-            try {
-                final String htmlContent = HttpUtil.doGet(url);
-                System.out.println(htmlContent);
-                if (!htmlContent.isEmpty()) {
-                    final int minHsLength = 2;
-                    final String[] hs = htmlContent.split(",\"liveChannel\":");
-                    if (hs.length >= minHsLength) {
-                        final String data = hs[1];
-                        for (int i = 0; i < data.length(); i++) {
-                            if (data.charAt(i) < '0' || data.charAt(i) > '9') {
-                                return data.substring(0, i);
-                            }
+        try {
+            LOGGER.info("application get live channel id, room url is [ " + url + " ].");
+            final String htmlContent = HttpUtil.doGet(url);
+            if (!htmlContent.isEmpty()) {
+                String regex = "\"liveChannel\":(.*?),";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(htmlContent);
+                while (matcher.find()) {
+                    String match = matcher.group(1);
+                    try {
+                        if (Long.parseLong(match) > 0) {
+                            return match;
                         }
+                    } catch (Exception e) {
+                        // ignore
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-            return null;
-        } else {
-            throw new RuntimeException("application get live channel id, room url not is [ "
-            + DEFAULT_HTTP_PREFIX + "," + DEFAULT_HTTPS_PREFIX + " ] prefix.");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        throw new RuntimeException("application get live channel id error.");
+    }
+
+    public Application(String mark, LiveRoomCallback.HuYa callback) {
+        this(DEFAULT_WEB_SOCKET_URL, new Handler(getLiveChannelId(DEFAULT_HTTP_PREFIX + mark), true, getCodec(), callback));
     }
 
     /**
      * 构造方法初始化
-     * @param liveChannelId 房间的 ID
-     * @param callback 回调的函数
-     */
-    public Application(String liveChannelId, LiveRoomCallback.HuYa callback) {
-        this(DEFAULT_WEB_SOCKET_URL, new Handler(liveChannelId, true, getCodec(), callback));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param liveChannelId 房间的 ID
-     * @param isAsync 是否异步执行
-     * @param callback 回调的函数
-     */
-    public Application(String liveChannelId, boolean isAsync, LiveRoomCallback.HuYa callback) {
-        this(DEFAULT_WEB_SOCKET_URL, new Handler(liveChannelId, isAsync, getCodec(), callback));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param url WebSocket 地址
-     * @param liveChannelId 房间的 ID
-     * @param callback 回调的函数
-     */
-    public Application(String url, String liveChannelId, LiveRoomCallback.HuYa callback) {
-        this(url, new Handler(liveChannelId, true, getCodec(), callback));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param url WebSocket 地址
-     * @param liveChannelId 房间的 ID
-     * @param isAsync 是否异步执行
-     * @param callback 回调的函数
-     */
-    public Application(String url, String liveChannelId, boolean isAsync, LiveRoomCallback.HuYa callback) {
-        this(url, new Handler(liveChannelId, isAsync, getCodec(), callback));
-    }
-
-    /**
-     * 构造方法初始化
-     * @param handler 处理器对象
-     */
-    public Application(Handler handler) {
-        this(DEFAULT_WEB_SOCKET_URL, handler);
-    }
-
-    /**
-     * 构造方法初始化
-     * @param url WebSocket 地址
+     *
+     * @param url     WebSocket 地址
      * @param handler 处理器对象
      */
     public Application(String url, Handler handler) {
-        this.url = url;
+        String baseInfo = "DBYgMGFkYmIwYzY3YTU4YTU2NTQ1MDEwY2NjMGRjYzQzZWYmGndlYmg1JjI0MDEzMTE0MjImd2Vic29ja2V0NgxIVVlBJlpIJjIwNTJGAFYXMTY1ODIuMjUzMzEsMzQ4MDYuNTUyMzRsdgCGAJYAqAACBghIVVlBX05FVBYBMAYLSFVZQV9WU0RLVUEWGndlYmg1JjI0MDEzMTE0MjImd2Vic29ja2V0";
+        this.url = url + "?baseinfo=" + baseInfo;
         this.handler = handler;
+        LOGGER.info("[ WS ] >>> " + this.url);
     }
 
     /**
      * 获取连接的地址
+     *
      * @return 连接的地址
      */
     public String getUrl() {
@@ -159,6 +134,7 @@ public class Application extends LiveRoomApplication {
 
     /**
      * 获取处理器对象
+     *
      * @return 处理器对象
      */
     public Handler getHandler() {
@@ -167,6 +143,7 @@ public class Application extends LiveRoomApplication {
 
     /**
      * 获取 liveChannelId
+     *
      * @return liveChannelId
      */
     public String getLiveChannelId() {

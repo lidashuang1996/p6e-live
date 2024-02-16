@@ -1,16 +1,16 @@
 package club.p6e.live.room.platform.huya;
 
-import java.lang.reflect.Field;
+import io.netty.buffer.ByteBuf;
+
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * 虎牙: https://www.huya.com/
  * 开源项目地址: http://live.p6e.club/
  * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
- *
+ * <p>
  * TAF 编解码
  *
  * @author lidashuang
@@ -21,130 +21,177 @@ public final class Taf {
     /**
      * 解码
      */
-    public static class Decode {
-        /** 数据栈 */
-        private final Stack<Map<Integer, Object>> stack = new Stack<>();
-        private final Stack<Map<Integer, Object>> cacheStack = new Stack<>();
+    @SuppressWarnings("ALL")
+    public static class Decoder {
+        public static class InfoModel implements Serializable {
+            private int tag;
+            private int type;
 
-        /**
-         * 解析数据
-         * @param input 输入流
-         * @return 结果
-         */
-        public Map<Integer, Object> execute(ByteBuf input) {
-            final Map<Integer, Object> result = new HashMap<>(16);
-            while (input.isReadable()) {
-                final int[] info = getInfo(input);
-                if (info[1] == 10) {
-                    final Map<Integer, Object> custom = stack.push(new HashMap<>(16));
-                    result.put(info[0], custom);
+            public InfoModel(int tag, int type) {
+                this.tag = tag;
+                this.type = type;
+            }
+
+            public void setTag(int tag) {
+                this.tag = tag;
+            }
+
+            public void setType(int type) {
+                this.type = type;
+            }
+
+            public int getTag() {
+                return tag;
+            }
+
+            public int getType() {
+                return type;
+            }
+        }
+
+        private final ByteBuf source;
+        private final boolean isLengthMark;
+        private final Map<String, Object> result = new HashMap<>();
+        private final Stack<Map<String, Object>> tmp = new Stack<>();
+
+        public Decoder(ByteBuf data) {
+            this(data, false);
+        }
+
+        public Decoder(ByteBuf data, boolean isLengthMark) {
+            this.source = data;
+            this.isLengthMark = isLengthMark;
+        }
+
+        public Map<String, ?> execute() {
+            this.tmp.clear();
+            this.result.clear();
+            while (this.source.isReadable()) {
+                final InfoModel info = getInfo();
+                if (info.type == 10) {
+                    final Map<String, Object> custom = new HashMap<>();
+                    if (this.tmp.isEmpty()) {
+                        this.result.put(String.valueOf(info.tag), custom);
+                    } else {
+                        this.tmp.peek().put(String.valueOf(info.tag), custom);
+                    }
+                    this.tmp.add(custom);
                     continue;
                 }
-                if (info[1] == 11) {
-                    if (!stack.empty()) {
-                        stack.pop();
+                if (info.type == 11) {
+                    if (!this.tmp.isEmpty()) {
+                        this.tmp.pop();
                     }
                     continue;
                 }
-                if (stack.empty()) {
-                    final Object o = getData(info[1], input);
-                    result.put(info[0], o);
+                writeData(String.valueOf(info.tag), getData(info.type));
+            }
+            return this.result;
+        }
+
+        public void writeData(String key, Object value) {
+            if (this.tmp.isEmpty()) {
+                if (this.result.get(key) == null) {
+                    this.result.put(key, value);
                 } else {
-                    final Object o = getData(info[1], input);
-                    stack.peek().put(info[0], o);
+                    if (this.result.get(key) instanceof List) {
+                        ((List<Object>) this.result.get(key)).add(value);
+                    } else {
+                        final List<Object> t = new ArrayList<>();
+                        t.add(this.result.get(key));
+                        t.add(value);
+                        this.result.put(key, t);
+                    }
                 }
+            } else {
+                final Object o = this.tmp.peek().get(key);
+                if (o == null) {
+                    this.tmp.peek().put(key, value);
+                } else {
+                    if (o instanceof List) {
+                        ((List<Object>) o).add(value);
+                    } else {
+                        final List<Object> t = new ArrayList<>();
+                        t.add(o);
+                        t.add(value);
+                        this.tmp.peek().put(key, t);
+                    }
+                }
+            }
+        }
+
+        public InfoModel getInfo() {
+            return getInfo(true);
+        }
+
+        public InfoModel getInfo(boolean isRead) {
+            final int data = isRead
+                    ? this.source.readByte()
+                    : this.source.getByte(this.source.readerIndex());
+            final int tag = data >> 4 & 0x0F;
+            final int type = data & 0x0F;
+            return new InfoModel(
+                    tag == 0x0F ? (isRead
+                            ? this.source.readByte()
+                            : this.source.getByte(this.source.readerIndex() + 1)
+                    ) : tag,
+                    type
+            );
+        }
+
+        public Object getData(int type) {
+            final Object result;
+            switch (type) {
+                case 0:
+                    result = this.getInt1();
+                    break;
+                case 1:
+                    result = this.getInt2();
+                    break;
+                case 2:
+                    result = this.getInt4();
+                    break;
+                case 3:
+                    result = this.getInt8();
+                    break;
+                case 4:
+                    result = this.getFloat();
+                    break;
+                case 5:
+                    result = this.getDouble();
+                    break;
+                case 6:
+                    result = this.getString1();
+                    break;
+                case 7:
+                    result = this.getString4();
+                    break;
+                case 8:
+                    result = this.getMap();
+                    break;
+                case 9:
+                    result = this.getList();
+                    break;
+                case 12:
+                    result = null;
+                    break;
+                case 13:
+                    result = this.getSimpleKeyValue();
+                    break;
+                default:
+                    throw new RuntimeException("[ " + type + " ] get data type error.");
             }
             return result;
         }
 
-        /**
-         * 获取当前的索引
-         * @param input 输入流对象
-         * @return 索引结果为数组，长度为 2. [0] ==> 索引（TAG） [1] ==> 类型
-         */
-        public int[] getInfo(ByteBuf input) {
-            final int data = input.readByte();
-            final int type = data & 0x0F;
-            final int tag = data >> 4 & 0x0F;
-            return tag >= 0x0F ? new int[] { (int) input.readByte(), type } : new int[] { tag, type };
-        }
-
-        /**
-         * 根据类型读取数据
-         * @param type 类型
-         * @param input 输入流对象
-         * @return 根据类型读取数据对象
-         */
-        public Object getData(int type, ByteBuf input) {
-            Object o;
-            switch (type) {
+        public int getLength() {
+            switch (getInt1()) {
                 case 0:
-                    o = getInt1(input);
-                    break;
+                    return this.getInt1();
                 case 1:
-                    o = getInt2(input);
-                    break;
+                    return this.getInt2();
                 case 2:
-                    o = getInt4(input);
-                    break;
-                case 3:
-                    o = getInt8(input);
-                    break;
-                case 4:
-                    o = getFloat(input);
-                    break;
-                case 5:
-                    o = getDouble(input);
-                    break;
-                case 6:
-                    o = getString1(input);
-                    break;
-                case 7:
-                    o = getString4(input);
-                    break;
-                case 8:
-                    o = getMap(input);
-                    break;
-                case 9:
-                    o = getList(input);
-                    break;
-                case 10:
-                case 11:
-                    cacheStack.push(new HashMap<>(16));
-                    while (input.isReadable()) {
-                        final int[] info = getInfo(input);
-                        if (info[1] == 11) {
-                            return cacheStack.pop();
-                        }
-                        cacheStack.peek().put(info[0], getData(info[1], input));
-                    }
-                    throw new RuntimeException("type 10/11 resolve exceptions.");
-                case 12:
-                    o = getNull();
-                    break;
-                case 13:
-                    o = getSimpleList(input);
-                    break;
-                default:
-                    throw new RuntimeException("get data type error.");
-            }
-            return o;
-        }
-
-        /**
-         * 读取长度
-         * @param input 输入流对象
-         * @return 长度内容
-         */
-        public int getLengthType(ByteBuf input) {
-            final int lenType = getInt1(input);
-            switch (lenType) {
-                case 0:
-                    return getInt1(input);
-                case 1:
-                    return getInt2(input);
-                case 2:
-                    return getInt4(input);
+                    return this.getInt4();
                 case 12:
                     return -1;
                 default:
@@ -152,370 +199,338 @@ public final class Taf {
             }
         }
 
-        /**
-         * 获取1个字节整型数据  [0]
-         * @param input 输入流对象
-         * @return 1个字节整型数据
-         */
-        public int getInt1(ByteBuf input) {
-            return input.readByte() & 0xFF;
+        public int getInt1() {
+            if (this.source.readableBytes() >= 1) {
+                return this.source.readByte() & 0xFF;
+            }
+            return 0;
         }
 
-        /**
-         * 获取2个字节整型数据 [1]
-         * @param input 输入流对象
-         * @return 2个字节整型数据
-         */
-        public int getInt2(ByteBuf input) {
-            return ((input.readByte() & 0xFF) << 8) | (input.readByte() & 0xFF);
+        public int getInt2() {
+            if (this.source.readableBytes() >= 2) {
+                return ((this.source.readByte() & 0xFF) << 8)
+                        | (this.source.readByte() & 0xFF);
+            }
+            return 0;
         }
 
-        /**
-         * 获取4个字节整型数据 [2]
-         * @param input 输入流对象
-         * @return 4个字节整型数据
-         */
-        public int getInt4(ByteBuf input) {
-            return input.readInt();
+        public int getInt4() {
+            if (this.source.readableBytes() >= 4) {
+                return this.source.readInt();
+            }
+            return 0;
         }
 
-        /**
-         * 获取8个字节整型数据 [3]
-         * @param input 输入流对象
-         * @return 8个字节整型数据
-         */
-        public long getInt8(ByteBuf input) {
-            return input.readLong();
+        public long getInt8() {
+            if (this.source.readableBytes() >= 8) {
+                return this.source.readLong();
+            }
+            return 0L;
         }
 
-        /**
-         * 获取4个字节Float [4]
-         * @param input 输入流对象
-         * @return 4个字节Float
-         */
-        public float getFloat(ByteBuf input) {
-            return input.readFloat();
+        public float getFloat() {
+            if (this.source.readableBytes() >= 4) {
+                return this.source.readFloat();
+            }
+            return 0L;
         }
 
-        /**
-         * 获取8个字节Double [5]
-         * @param input 输入流对象
-         * @return 8个字节Double
-         */
-        public double getDouble(ByteBuf input) {
-            return input.readDouble();
+        public double getDouble() {
+            if (this.source.readableBytes() >= 8) {
+                return this.source.readDouble();
+            }
+            return 0L;
         }
 
-        /**
-         * 获取字符串 [6]
-         * @param input 输入流对象
-         * @return 字符串
-         */
-        public String getString1(ByteBuf input) {
-            final byte[] bytes = new byte[getInt1(input)];
-            input.readBytes(bytes);
-            return new String(bytes);
+        public String getString1() {
+            final byte[] bytes = new byte[getInt1()];
+            if (this.source.readableBytes() >= bytes.length) {
+                this.source.readBytes(bytes);
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+            return null;
         }
 
-        /**
-         * 获取字符串 [7]
-         * @param input 输入流对象
-         * @return 字符串
-         */
-        public String getString4(ByteBuf input) {
-            final byte[] bytes = new byte[getInt4(input)];
-            input.readBytes(bytes);
-            return new String(bytes);
+        public String getString4() {
+            final byte[] bytes = new byte[getInt4()];
+            if (this.source.readableBytes() >= bytes.length) {
+                this.source.readBytes(bytes);
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+            return null;
         }
 
-        /**
-         * 获取 Map 紧跟一个整型数据表示Map的大小，再跟[key, value]对列表 [8]
-         * @param input 输入流对象
-         * @return Map
-         */
-        public Map<Object, Object> getMap(ByteBuf input) {
-            // 代表的长度为 len
-            final int len = getLengthType(input);
+        public Map<Object, Object> getMap() {
+            final int len = getLength();
             if (len < 0) {
                 return null;
             }
-            final Map<Object, Object> result = new HashMap<>(len);
+            final Map<Object, Object> result = new HashMap<>();
             for (int i = 0; i < len; i++) {
-                result.put(getMapKey(input), getMapValue(input));
+                result.put(getMapKey(), getMapValue());
             }
             return result;
         }
 
-        public Object getMapKey(ByteBuf input) {
-            final int[] info = getInfo(input);
-            if (info[0] == 0) {
-                return getData(info[1], input);
+        public Object getMapKey() {
+            final InfoModel info = getInfo();
+            if (info.tag == 0) {
+                return getData(info.type);
             }
             throw new RuntimeException("map key error.");
         }
 
-        public Object getMapValue(ByteBuf input) {
-            final int[] info = getInfo(input);
-            if (info[0] == 1) {
-                return getData(info[1], input);
+        public Object getMapValue() {
+            final InfoModel info = getInfo();
+            if (info.tag == 1) {
+                return this.getData(info.type);
             }
             throw new RuntimeException("map value error.");
         }
 
-        /**
-         * 获取 List 紧跟一个整型数据表示List的大小，再跟元素列表 [9]
-         * @param input 输入流对象
-         * @return List
-         */
-        public List<Object> getList(ByteBuf input) {
-            final int len = getLengthType(input);
+        public List<Object> getList() {
+            final int len = getLength();
             if (len < 0) {
                 return null;
             }
             final List<Object> result = new ArrayList<>();
             for (int i = 0; i < len; i++) {
-                result.add(getListValue(input));
+                result.add(getListValue());
             }
             return result;
         }
 
-        public Object getListValue(ByteBuf input) {
-            final int[] info = getInfo(input);
-            if (info[0] == 0) {
-                return getData(info[1], input);
+        public Object getListValue() {
+            if (this.source.isReadable()) {
+                final InfoModel info = getInfo(false);
+                if (info.tag == 0) {
+                    if (info.type == 10 || info.type == 11) {
+                        return new Decoder(this.source).execute();
+                    } else {
+                        getInfo(true);
+                        return getData(info.type);
+                    }
+                }
+                throw new Error("list value error.");
+            } else {
+                return null;
             }
-            throw new RuntimeException("list value error.");
         }
 
-        /**
-         * 后面不跟数据  [12]
-         * @return null
-         */
-        public Object getNull() {
-            return null;
-        }
-
-        /**
-         * 获取 SimpleList 简单列表（目前用在byte数组） [13]
-         * 紧跟一个类型字段（目前只支持byte）
-         * 紧跟一个整型数据表示长度，再跟byte数据
-         * @param input 输入流对象
-         * @return Map<Integer, Object> 解码后的数据对象
-         */
-        public Object getSimpleList(ByteBuf input) {
-            final int type = getInt1(input);
+        public Object getSimpleKeyValue() {
+            final int type = getInt1();
             if (type == 0) {
-                // type = 0 字解码类型，继续对字解码迭代的类型
-                final int len = getLengthType(input);
+                int len = getLength();
                 if (len == -1) {
-                    final byte[] bs = new byte[input.readableBytes()];
-                    input.readBytes(bs);
+                    this.source.readBytes(this.source.readableBytes()).release();
                     return null;
                 }
-
-                final ByteBuf byteBuf = input.readBytes(len);
+                ByteBuf byteBuf = null;
                 try {
-                    // 0x7b ... 0x7d
-                    if (byteBuf.readByte() == 0x7b) {
-                        final byte[] bytes = new byte[byteBuf.resetReaderIndex().readerIndex()];
-                        byteBuf.readBytes(bytes);
-                        return bytes;
-                    } else {
-                        byteBuf.resetReaderIndex();
-                        final byte[] bs = new byte[byteBuf.readableBytes()];
-                        byteBuf.readBytes(bs);
-                        return execute(byteBuf.resetReaderIndex());
+                    byteBuf = this.source.readBytes(len);
+                    if (this.isLengthMark) {
+                        byteBuf.readInt();
                     }
+                    if (byteBuf.readableBytes() >= 2) {
+                        final int ss = byteBuf.getByte(byteBuf.readerIndex());
+                        final int se = byteBuf.getByte(byteBuf.readableBytes() - 1);
+                        if (ss == 123 && se == 125) {
+                            final byte[] bytes = new byte[byteBuf.readableBytes()];
+                            byteBuf.readBytes(bytes);
+                            return new String(bytes);
+                        }
+                    }
+                    return new Decoder(byteBuf).execute();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    return new HashMap<>(0);
+                    return null;
                 } finally {
-                    byteBuf.release();
+                    if (byteBuf != null) {
+                        byteBuf.release();
+                    }
                 }
             }
-            throw new RuntimeException("simple list type error.");
-        }
-
-        public void cleanStack() {
-            stack.clear();
-            cacheStack.clear();
+            throw new Error("simple key value error.");
         }
     }
 
     /**
      * 编码
      */
-    public static class Encode {
+    @SuppressWarnings("ALL")
+    public static class Encoder {
+        private final Object source;
+        private final boolean isLengthMark;
+        private final boolean isSimpleKeyValue;
+        private final List<Byte> result = new ArrayList<>();
 
-        private boolean bool;
+        private boolean nextIsSimpleKeyValue;
 
-        public ByteBuf execute(List<Object> list) {
-            return execute(list, false);
+        public Encoder(Object data) {
+            this(data, false, true);
         }
 
-        public ByteBuf execute(List<Object> list, boolean bool) {
-            this.bool = bool;
-            final ByteBuf byteBuf = Unpooled.buffer();
-            for (int i = 0; i < list.size(); i++) {
-                setData(byteBuf, i, list.get(i));
-            }
-            return byteBuf;
+        public Encoder(Object data, boolean isLengthMark, boolean isSimpleKeyValue) {
+            this.source = data;
+            this.isLengthMark = isLengthMark;
+            this.isSimpleKeyValue = isSimpleKeyValue;
+            this.nextIsSimpleKeyValue = isSimpleKeyValue;
         }
 
-        @SuppressWarnings("all")
-        public void setData(ByteBuf out, int tag, Object o) {
-            if (o == null) {
-                setInfo(out, tag, 12);
-            } else {
-                if (o instanceof Integer) {
-                    final int oi = (int) o;
-                    if (oi < 0xFF) {
-                        setInfo(out, tag, 0);
-                        out.writeByte((oi & 0xFF));
-                    } else if (oi < 0xFFFF) {
-                        setInfo(out, tag, 1);
-                        out.writeByte(((oi >> 8) & 0xFF));
-                        out.writeByte((oi & 0xFF));
-                    } else if (oi < Integer.MAX_VALUE ) {
-                        setInfo(out, tag, 2);
-                        out.writeInt(oi);
-                    } else {
-                        throw new RuntimeException("object to integer error.");
+        public byte[] execute() {
+            if (this.source instanceof Properties) {
+                final Properties data = (Properties) this.source;
+                final List<Integer> nums = new ArrayList<>();
+                data.keySet().forEach(key -> {
+                    if (key instanceof String) {
+                        nums.add(Integer.parseInt((String) key));
                     }
-                } else if (o instanceof Long) {
-                    final long ol = (long) o;
-                    setInfo(out, tag, 3);
-                    out.writeLong(ol);
-                } else if (o instanceof Float) {
-                    final float of = (float) o;
-                    setInfo(out, tag, 4);
-                    out.writeFloat(of);
-                } else if (o instanceof Double) {
-                    final double od = (double) o;
-                    setInfo(out, tag, 5);
-                    out.writeDouble(od);
-                } else if (o instanceof String) {
-                    final String os = (String) o;
-                    final int len = os.length();
+                });
+                nums.sort(Integer::compareTo);
+                nums.forEach(k -> set(k, data.get(String.valueOf(k))));
+            }
+            final byte[] result = new byte[this.result.size()];
+            for (int i = 0; i < this.result.size(); i++) {
+                result[i] = this.result.get(i);
+            }
+            return result;
+        }
+
+        private void set(int index, Object data) {
+            if (data == null || data == Void.TYPE) {
+                setInfo(index, 12);
+            } else {
+                if (data instanceof Integer) {
+                    if (((int) data) < 0xFF) {
+                        setInfo(index, 0);
+                        setInt1((int) data);
+                    } else if (((int) data) < 0xFFFF) {
+                        setInfo(index, 1);
+                        setInt2((int) data);
+                    } else {
+                        setInfo(index, 2);
+                        setInt4((int) data);
+                    }
+                } else if (data instanceof Long) {
+                    setInfo(index, 3);
+                    setInt8((long) data);
+                } else if (data instanceof String) {
+                    final int len = ((String) data).length();
                     if (len < 0xFF) {
-                        setInfo(out, tag, 6);
-                        out.writeByte(len);
+                        this.setInfo(index, 6);
+                        setInt1(len);
                     } else {
-                        setInfo(out, tag, 7);
-                        out.writeInt(len);
+                        this.setInfo(index, 7);
+                        setInt4(len);
                     }
-                    out.writeBytes(os.getBytes(StandardCharsets.UTF_8));
-                } else if (o instanceof Map) {
-                    final Map<Object, Object> om = (Map<Object, Object>) o;
-                    setInfo(out, tag, 8);
-                    if (om.size() == 0) {
-                        setNullType(out);
-                    } else {
-                        setLengthType(out, om.size());
-                        for (Object key : om.keySet()) {
-                            setMapKey(out, key);
-                            setMapValue(out, om.get(key));
-                        }
-                    }
-                } else if (o instanceof List) {
-                    final List<Object> ol = (List<Object>) o;
-                    setInfo(out, tag, 9);
-                    if (ol.size() == 0) {
-                        setNullType(out);
-                    } else {
-                        setLengthType(out, ol.size());
-                        for (Object item : ol) {
-                            setListValue(out, item);
-                        }
-                    }
-                } else {
-                    final boolean b = bool;
-                    final Class<?> clazz = o.getClass();
-                    final Field[] fields = clazz.getDeclaredFields();
-                    final List<Object> list = new ArrayList<>();
-                    if (b) {
-                        // 预留长度位置
-                        list.add(null);
-                    }
-                    for (final Field field : fields) {
-                        try {
-                            field.setAccessible(true);
-                            list.add(field.get(o));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    ByteBuf byteBuf = null;
-                    try {
-                        byteBuf = execute(list);
-                        final int len = byteBuf.readableBytes();
-                        setInfo(out, tag, 13);
-                        out.writeByte(0);
-                        if (b) {
-                            // 写入长度
-                            byteBuf.readByte();
-                            setLengthType(out, len - 1);
-                            out.writeInt(len - 1);
-                            while (byteBuf.isReadable()) {
-                                out.writeByte(byteBuf.readByte());
-                            }
-                        } else {
-                            setLengthType(out, len);
-                            out.writeBytes(byteBuf);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        if (byteBuf != null) {
-                            byteBuf.release();
-                        }
-                    }
+                    setString((String) data);
+                } else if (data instanceof Properties) {
+                    setSimpleKeyValue(index, data);
+                } else if (data instanceof Map) {
+                    setMap(index, (Map<?, ?>) data);
+                } else if (data instanceof List) {
+                    setList(index, (List<?>) data);
                 }
-                // 自定义的字段 // 10  11
-                // 暂不实现
             }
         }
 
-        public void setInfo(ByteBuf out, int tag, int type) {
-            if (tag <= 0x0F) {
-                int d = ((tag & 0x0F) << 4) | (type & 0x0F);
-                out.writeByte(d);
+        private void setNull() {
+            this.result.add((byte) 12);
+        }
+
+        private void setInfo(int index, int type) {
+            if (index < 0x0F) {
+                this.result.add((byte) (((index & 0x0F) << 4) | (type & 0x0F)));
             } else {
-                out.writeByte((type & 0x0F));
-                out.writeByte((tag & 0xFF));
+                this.result.add((byte) (type & 0x0F));
+                this.result.add((byte) (index & 0xFF));
             }
         }
 
-        public void setMapKey(ByteBuf out, Object v) {
-            setData(out, 0, v);
+        private void setInt1(int data) {
+            this.result.add((byte) (data & 0xFF));
         }
 
-        public void setMapValue(ByteBuf out, Object v) {
-            setData(out, 1, v);
+        private void setInt2(int data) {
+            this.result.add((byte) ((data >> 8) & 0xFF));
+            this.result.add((byte) (data & 0xFF));
         }
 
-        public void setListValue(ByteBuf out, Object v) {
-            setData(out, 0, v);
+        private void setInt4(int data) {
+            this.result.add((byte) ((data >> 24) & 0xFF));
+            this.result.add((byte) ((data >> 16) & 0xFF));
+            this.result.add((byte) ((data >> 8) & 0xFF));
+            this.result.add((byte) (data & 0xFF));
         }
 
-        public void setNullType(ByteBuf out) {
-            out.writeByte(12);
+        private void setInt8(long data) {
+            setInt4((int) (data >> 32));
+            setInt4((int) (data & 0xFFFFFFFFL));
         }
 
-        public void setLengthType(ByteBuf out, long v) {
-            if (v < 0xFF) {
-                out.writeByte(0);
-                out.writeByte(((int)v & 0xFF));
-            } else if (v < 0xFFFF) {
-                out.writeByte(1);
-                out.writeByte((((int)v >> 8) & 0xFF));
-                out.writeByte(((int)v & 0xFF));
-            } else if (v < Integer.MAX_VALUE ) {
-                out.writeByte(2);
-                out.writeInt((int) v);
+        private void setString(String data) {
+            setBytes(data.getBytes(StandardCharsets.UTF_8));
+        }
+
+        private void setBytes(byte[] data) {
+            if (data != null) {
+                for (final byte b : data) {
+                    this.result.add(b);
+                }
+            }
+        }
+
+        private void setLength(int num) {
+            if (num < 0xFF) {
+                this.result.add((byte) 0);
+                setInt1(num);
+            } else if (num < 0xFFFF) {
+                this.result.add((byte) 1);
+                setInt2(num);
             } else {
-                out.writeByte(3);
-                out.writeLong(v);
+                this.result.add((byte) 2);
+                setInt4(num);
+            }
+        }
+
+        private void setMap(int index, Map<?, ?> data) {
+            setInfo(index, 8);
+            if (data == null || data.isEmpty()) {
+                setNull();
+            } else {
+                nextIsSimpleKeyValue = false;
+                setLength(data.size());
+                data.forEach((k, v) -> {
+                    set(0, k);
+                    set(1, v);
+                });
+            }
+        }
+
+        private void setList(int index, List<?> data) {
+            setInfo(index, 9);
+            if (data == null || data.isEmpty()) {
+                setNull();
+            } else {
+                setLength(data.size());
+                data.forEach(i -> set(0, i));
+            }
+        }
+
+        private void setSimpleKeyValue(int index, Object data) {
+            if (isSimpleKeyValue) {
+                setInfo(index, 13);
+                this.result.add((byte) 0);
+                final byte[] bytes = new Encoder(data, false, nextIsSimpleKeyValue).execute();
+                setLength(bytes.length + (isLengthMark ? 4 : 0));
+                if (isLengthMark) {
+                    setInt4(bytes.length + 4);
+                }
+                setBytes(bytes);
+            } else {
+                this.result.add((byte) 0x0a);
+                setBytes(new Encoder(data, false, false).execute());
+                this.result.add((byte) 0x0b);
             }
         }
     }

@@ -20,10 +20,10 @@ public class P6eLiveRoomApplication {
     public static void createBiLiBiLiLiveRoom(club.p6e.live.room.platform.bilibili.Application application) {
         application.connect();
     }
-//
-//    public static void createHuYaLiveRoom(club.p6e.live.room.platform.huya.Application application) {
-//        application.connect();
-//    }
+
+    public static void createHuYaLiveRoom(club.p6e.live.room.platform.huya.Application application) {
+        application.connect();
+    }
 //
 //    public static void createEGameLiveRoom(club.p6e.live.room.platform.egame.Application application) {
 //        application.connect();

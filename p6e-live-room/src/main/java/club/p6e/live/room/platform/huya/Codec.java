@@ -14,7 +14,7 @@ import java.util.List;
  * 虎牙: https://www.huya.com/
  * 开源项目地址: http://live.p6e.club/
  * Github 项目地址 Github: https://github.com/lidashuang1996/p6e-live
- *
+ * <p>
  * 虎牙编解码对象
  *
  * @author lidashuang
@@ -22,11 +22,14 @@ import java.util.List;
  */
 public class Codec extends LiveRoomCodec<Message> {
 
-    /** 注入日志对象 */
+    /**
+     * 注入日志对象
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Codec.class);
 
     /**
      * 构造方法初始化
+     *
      * @param builder 消息构建器
      */
     public Codec(LiveRoomMessageBuilder<Message> builder) {
@@ -48,6 +51,7 @@ public class Codec extends LiveRoomCodec<Message> {
 
     /**
      * 解码操作
+     *
      * @param byteBuf 输入的对象
      * @return 输出的对象
      */
@@ -63,9 +67,11 @@ public class Codec extends LiveRoomCodec<Message> {
     /**
      * 编码操作
      * 编码操作将消息对象转换为 ByteBuf 对象
+     *
      * @param message 消息对象
      * @return ByteBuf 对象
      */
+    @SuppressWarnings("ALL")
     private ByteBuf encodeMessageToByteBuf(Message message) {
         final byte[] bytes = this.builder.serialization(message);
         final ByteBuf byteBuf = Unpooled.buffer(bytes.length);

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -282,6 +283,9 @@ public final class HttpUtil {
             }
         }
 
+        httpUriRequest.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+        httpUriRequest.setHeader("Content-Type", "text/html; charset=UTF-8");
+
         if (globalHeaders != null) {
             for (String name : globalHeaders.keySet()) {
                 httpUriRequest.setHeader(name, globalHeaders.get(name));
@@ -293,7 +297,6 @@ public final class HttpUtil {
                 httpUriRequest.setHeader(name, headers.get(name));
             }
         }
-
         return client.execute(httpUriRequest);
     }
 
