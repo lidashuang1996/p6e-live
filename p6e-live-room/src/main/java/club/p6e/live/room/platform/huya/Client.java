@@ -63,6 +63,10 @@ public class Client {
         this.p6eWebSocketClient = p6eWebSocketClient;
     }
 
+    public String getLiveChannelId() {
+        return liveChannelId;
+    }
+
     /**
      * 发送消息
      */
